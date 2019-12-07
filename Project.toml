@@ -1,0 +1,6 @@
+authors = ["Caleb Depatie <aloysuiswolf@gmail.com>"]
+name = "Julianda"
+uuid = "07dd2640-189c-11ea-0deb-23df4a1bee01"
+version = "0.1.0"
+
+[deps]

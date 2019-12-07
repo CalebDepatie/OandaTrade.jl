@@ -1,0 +1,3 @@
+module Trade
+
+end
