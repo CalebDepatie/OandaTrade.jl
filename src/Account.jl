@@ -1,10 +1,13 @@
 module Account
-export account, getAccount
 
-import HTTP
-import JSON
+import HTTP, JSON
 
-# TODO: Add strict types
+# If I can get around the include statements I would like to
+include("Position.jl")
+include("Trade.jl")
+include("Order.jl")
+
+# TODO: Add strict types / Add type of coersion
 
 "The account struct given by Oanda"
 struct account
@@ -33,12 +36,12 @@ struct account
     resettablePL # The resetable profit/loss since last reset
     unrealizedPL # The unrealised profit/loss of the account
     withdrawalLim # The withdrawal limit of the account
-    #positions # TBD requires the positions struct
-    #orders # TBD requires the order struct
-    #trades # TBD requires the trade struct
+    positions # Positions of the account
+    orders # Orders of the account
+    trades # Trades of the account
 end
 
-"Returns an Oanda account struct"
+"Returns an Oanda account struct when given a valid config"
 function getAccount(config)
     r = HTTP.request("GET", string("https://", config.hostname, "/v3/accounts/", config.account),
     ["Authorization" => string("Bearer ", config.token)])
@@ -48,13 +51,16 @@ function getAccount(config)
     data = JSON.parse(String(r.body))
     acc = data["account"]
     # Look at the following hideous code ... Im sure a cleaner way exists
+    positions = Position.positionDictToStruct(acc["positions"])
+    orders = Order.orderDictToStruct(acc["orders"])
+    trades = Trade.tradeDictToStruct(acc["trades"])
     temp = account(acc["NAV"], acc["alias"], acc["balance"], acc["createdByUserID"],
     acc["createdTime"], acc["currency"], acc["hedgingEnabled"], acc["id"], acc["lastTransactionID"],
     acc["marginAvailable"], acc["marginCloseoutMarginUsed"], acc["marginCloseoutNAV"],
     acc["marginCloseoutPercent"], acc["marginCloseoutPositionValue"], acc["marginCloseoutUnrealizedPL"],
     acc["marginRate"], acc["marginUsed"], acc["openPositionCount"], acc["openTradeCount"],
     acc["pendingOrderCount"], acc["pl"], acc["positionValue"], acc["resettablePL"],
-    acc["unrealizedPL"], acc["withdrawalLimit"])
+    acc["unrealizedPL"], acc["withdrawalLimit"], positions, orders, trades)
     return temp
 end
 
