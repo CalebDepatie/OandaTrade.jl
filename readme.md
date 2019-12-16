@@ -5,11 +5,11 @@ Julianda is in the very early stages of design, but I plan it to be a Julia wrap
 ## Endpoints to Do:
 
 * Account
-  * /accounts
+  * ~~/accounts~~
   * ~~/accounts/{accountID}~~
-  * /accounts/{accountID}/summary
-  * /accounts/{accountID}/instruments
-  * /accounts/{accountID}/configuration
+  * ~~/accounts/{accountID}/summary~~
+  * ~~/accounts/{accountID}/instruments~~
+  * ~~/accounts/{accountID}/configuration~~
   * /accounts/{accountID}/changes
 * Instrument
   * /instruments/{instrument}/candles
@@ -43,6 +43,6 @@ Julianda is in the very early stages of design, but I plan it to be a Julia wrap
   * /accounts/{accountID}/transactions/stream
 * Pricing
   * /accounts/{accountID}/candles/latest
-  * /accounts/{accountID}/pricing
+  * ~~/accounts/{accountID}/pricing~~
   * /accounts/{accountID}/pricing/stream
   * /accounts/{accountID}/instruments/{instrument}/candles

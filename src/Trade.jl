@@ -1,15 +1,35 @@
 module Trade
+using JSON3
 
 "Detailed Trade struct from Oanda"
-struct trade
+mutable struct trade
+    currentUnits # Current units of the trade (- is short + is long)
+    financing # The financing paid / collected for this trade
+    id # The id of the trade
+    initialUnits # Initial opening units of the trade (- is short + is long)
+    instrument # Instrument of the trade
+    openTime # The time the trade was opened
+    price # The price the trade is set at
+    realizedPL # The profit / loss of the trade that has been incurred
+    state # current state of the trade
+    unrealizedPL # The profit / loss of the trade that hasnt been incurred
 
+    trade() = new()
 end
 
-"Turns the raw dict data into trades"
-function tradeDictToStruct(posDict)
-    trades = []
-
-    return trades
+"Coerce a given Trade into its proper types (Used internally)"
+function coerceTrade(trade::trade)
+    trade.currentUnits = parse(Int32, trade.currentUnits)
+    trade.financing = parse(Float32, trade.financing)
+    # ID is left as a string, makes more sense to me for usage
+    trade.initialUnits = parse(Int32, trade.initialUnits)
+    trade.price = parse(Float32, trade.price)
+    trade.realizedPL = parse(Float32, trade.realizedPL)
+    trade.unrealizedPL = parse(Float32, trade.unrealizedPL)
+    return trade
 end
+
+# Declaring JSON3 struct types
+JSON3.StructType(::Type{Trade.trade}) = JSON3.Mutable()
 
 end
