@@ -1,6 +1,6 @@
 # Julianda
 
-Julianda is in the very early stages of design, but I plan it to be a Julia wrapper for the Oanda FX trading API. I will eventually add functions accessing every endpoint.
+Julianda is in the very early stages of design, but I plan it to be a Julia wrapper for the Oanda FX trading API. I will eventually add functions accessing every endpoint. Documentation coming soon/
 
 ## Endpoints to Do:
 
@@ -16,7 +16,7 @@ Julianda is in the very early stages of design, but I plan it to be a Julia wrap
   * /instruments/{instrument}/orderBook
   * /instruments/{instrument}/positionBook
 * Order
-  * /accounts/{accountID}/orders * POST
+  * ~~/accounts/{accountID}/orders * POST~~
   * /accounts/{accountID}/orders * GET
   * /accounts/{accountID}/pendingOrders
   * /accounts/{accountID}/orders/{orderSpecifier} * GET
