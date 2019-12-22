@@ -1,3 +1,5 @@
+#__precompile__()
+
 module Julianda
 
 # TODO: Expand the structs with full JSON info (Can be found on the definitions page of oanda)
@@ -11,4 +13,4 @@ include("Instrument.jl")
 include("Transaction.jl")
 include("Pricing.jl")
 
-end # module
+end
