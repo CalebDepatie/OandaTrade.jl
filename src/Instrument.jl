@@ -1,9 +1,9 @@
 module Instrument
 
-using Dates
-
+using HTTP, JSON3, Dates, CodecZlib
+#------------------------------------------------------------------------------------
 #/instruments/{instrument}/candles Endpoint
-
+#------------------------------------------------------------------------------------
 mutable struct candlestickdata
     o   #open
     h   #high
@@ -38,7 +38,6 @@ JSON3.StructType(::Type{candlestick}) = JSON3.Mutable()
 JSON3.StructType(::Type{candles}) = JSON3.Mutable()
 
 # Conversions to proper Julia types
-
 function coerceCandleStick(config,candle::candlestick)
 
     RFC = Dates.DateFormat("yyyy-mm-ddTHH:MM:SS.sssssssssZ")
@@ -95,7 +94,7 @@ getcandles has five methods differing in how to request the number of candles to
 
 """
 #Is it possible to handle combinations of count,fromDate, toDate with fewer methods?
-function getcandles(config, instrument::String, lastn::Int, price::String="M", granularity::String="M5";kw...)
+function getcandles(config::config, instrument::String, lastn::Int, price::String="M", granularity::String="M5";kw...)
 
     #TODO kw-> smooth::Bool, includeFirst::Bool, dailyaligment::Int, alignmentTimezone::String, weeklyAlignment::String)
 
@@ -118,7 +117,7 @@ function getcandles(config, instrument::String, lastn::Int, price::String="M", g
 
 end
 
-function getcandles(config,instrument::String, from::DateTime, to::DateTime, price::String = "M", granularity::String = "M5";kw...)
+function getcandles(config::config,instrument::String, from::DateTime, to::DateTime, price::String = "M", granularity::String = "M5";kw...)
     
     #TODO kw-> smooth::Bool, includeFirst::Bool, dailyaligment::Int, alignmentTimezone::String, weeklyAlignment::String)
     
@@ -143,7 +142,7 @@ function getcandles(config,instrument::String, from::DateTime, to::DateTime, pri
     return temp
 end
 
-function getcandles(config, instrument::String, from::DateTime, n::Int, price::String = "M", granularity::String = "M5";kw...)
+function getcandles(config::config, instrument::String, from::DateTime, n::Int, price::String = "M", granularity::String = "M5";kw...)
     
     #TODO kw-> smooth::Bool, includeFirst::Bool, dailyaligment::Int, alignmentTimezone::String, weeklyAlignment::String)
     
@@ -167,7 +166,7 @@ function getcandles(config, instrument::String, from::DateTime, n::Int, price::S
     return temp
 end
 
-function getcandles(config, instrument::String, n::Int,to::DateTime, price::String = "M", granularity::String = "M5";kw...)
+function getcandles(config::config, instrument::String, n::Int,to::DateTime, price::String = "M", granularity::String = "M5";kw...)
     
     #TODO kw-> smooth::Bool, includeFirst::Bool, dailyaligment::Int, alignmentTimezone::String, weeklyAlignment::String)
     
@@ -191,7 +190,7 @@ function getcandles(config, instrument::String, n::Int,to::DateTime, price::Stri
     return temp
 end
 
-function getcandles(config, instrument::String, from::DateTime, price::String = "M", granularity::String = "M5";kw...)
+function getcandles(config::config, instrument::String, from::DateTime, price::String = "M", granularity::String = "M5";kw...)
 
     #TODO kw-> smooth::Bool, includeFirst::Bool, dailyaligment::Int, alignmentTimezone::String, weeklyAlignment::String)
     
@@ -214,8 +213,171 @@ function getcandles(config, instrument::String, from::DateTime, price::String = 
 
     return temp
 end
-
+#------------------------------------------------------------------------------------
 #/instruments/{instrument}/orderBook Endpoint
+#------------------------------------------------------------------------------------
+mutable struct orderBookBucket
+    price
+    longCountPercent
+    shortCountPercent
 
+    orderBookBucket()=new()
+end
+
+mutable struct orderBook
+    instrument
+    time
+    price
+    bucketWidth
+    buckets::Vector{orderBookBucket}
+   
+    orderBook()=new()
+end
+
+mutable struct orderBookTopLayer
+    orderBook::orderBook
+
+    orderBookTopLayer() = new()
+end
+
+# Declaring JSON3 struct types
+JSON3.StructType(::Type{orderBookTopLayer}) = JSON3.Mutable()
+JSON3.StructType(::Type{orderBook}) = JSON3.Mutable()
+JSON3.StructType(::Type{orderBookBucket}) = JSON3.Mutable()
+
+# Conversions to proper Julia types
+function coerceorderBook(ob::orderBook)
+    RFC = Dates.DateFormat("yyyy-mm-ddTHH:MM:SSZ")
+
+    ob.time = DateTime(ob.time, RFC)
+    ob.price = parse(Float32,ob.price)
+    ob.bucketWidth =parse(Float32,ob.bucketWidth)
+    for bucket in ob.buckets
+        bucket = coerceOrderBookBucket(bucket)
+    end
+
+    return ob
+end
+
+function coerceOrderBookBucket(bucket::orderBookBucket)
+    bucket.price=parse(Float32,bucket.price)
+    bucket.longCountPercent=parse(Float32,bucket.longCountPercent)
+    bucket.shortCountPercent=parse(Float32,bucket.shortCountPercent)
+
+    return bucket
+end
+
+"""
+    getorderbook(config::config,instrument::String,time::DateTime=now())
+
+# Example
+    getorderbook(userdata,"EUR_CHF",DateTime(2017,1,31,4,00))
+
+"""
+function getorderbook(config::config,instrument::String, time::DateTime=now())
+
+    time = Dates.format(time, "yyyy-mm-ddTHH:MM:SS.000000000Z")
+
+    r = HTTP.get(string("https://", config.hostname, "/v3/instruments/", instrument, "/orderBook"),
+        ["Authorization" => string("Bearer ", config.token), "Accept-Datetime-Format" => config.datetime];
+        query = Dict("time" => time))
+
+    if r.status != 200
+        println(r.status)
+    end    
+
+    unzipr = GzipDecompressorStream(IOBuffer(String(r.body))) #Response is compressed
+  
+    temp = JSON3.read(unzipr,orderBookTopLayer)
+
+    temp.orderBook = coerceorderBook(temp.orderBook)
+
+    return temp.orderBook
+end
+
+#------------------------------------------------------------------------------------
+#/instruments/{instrument}/positionBook Endpoint
+#------------------------------------------------------------------------------------
+mutable struct positionBookBucket
+    price
+    longCountPercent
+    shortCountPercent
+
+    positionBookBucket()=new()
+end
+
+mutable struct positionBook
+    instrument
+    time
+    price
+    bucketWidth
+    buckets::Vector{positionBookBucket}
+   
+    positionBook()=new()
+end
+
+mutable struct positionBookTopLayer
+    positionBook::positionBook
+
+    positionBookTopLayer() = new()
+end
+
+# Declaring JSON3 struct types
+JSON3.StructType(::Type{positionBookTopLayer}) = JSON3.Mutable()
+JSON3.StructType(::Type{positionBook}) = JSON3.Mutable()
+JSON3.StructType(::Type{positionBookBucket}) = JSON3.Mutable()
+
+# Conversions to proper Julia types
+function coercepositionBook(ob::positionBook)
+    RFC = Dates.DateFormat("yyyy-mm-ddTHH:MM:SSZ")
+
+    ob.time = DateTime(ob.time, RFC)
+    ob.price = parse(Float32,ob.price)
+    ob.bucketWidth =parse(Float32,ob.bucketWidth)
+    for bucket in ob.buckets
+        bucket = coercepositionBookBucket(bucket)
+    end
+
+    return ob
+end
+
+function coercepositionBookBucket(bucket::positionBookBucket)
+    bucket.price=parse(Float32,bucket.price)
+    bucket.longCountPercent=parse(Float32,bucket.longCountPercent)
+    bucket.shortCountPercent=parse(Float32,bucket.shortCountPercent)
+
+    return bucket
+end
+
+"""
+    getpositionbook(config::config,instrument::String,time::DateTime=now())
+
+# Example
+    getpositionbook(userdata,"EUR_CHF",DateTime(2017,1,31,4,00))
+
+"""
+function getpositionbook(config::config,instrument::String, time::DateTime=now())
+
+    time = Dates.format(time, "yyyy-mm-ddTHH:MM:SS.000000000Z")
+
+    r = HTTP.get(string("https://", config.hostname, "/v3/instruments/", instrument, "/positionBook"),
+        ["Authorization" => string("Bearer ", config.token), "Accept-Datetime-Format" => config.datetime];
+        query = Dict("time" => time))
+
+    if r.status != 200
+        println(r.status)
+    end    
+
+    unzipr = GzipDecompressorStream(IOBuffer(String(r.body))) #Response is compressed
+  
+    temp = JSON3.read(unzipr,positionBookTopLayer)
+
+    temp.positionBook = coercepositionBook(temp.positionBook)
+
+    return temp.positionBook
+end
 
 end #Module
+
+
+
