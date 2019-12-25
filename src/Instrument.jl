@@ -294,7 +294,6 @@ function getorderbook(config::config,instrument::String, time::DateTime=now())
 
     return temp.orderBook
 end
-
 #------------------------------------------------------------------------------------
 #/instruments/{instrument}/positionBook Endpoint
 #------------------------------------------------------------------------------------
@@ -378,6 +377,3 @@ function getpositionbook(config::config,instrument::String, time::DateTime=now()
 end
 
 end #Module
-
-
-
