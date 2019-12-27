@@ -61,11 +61,11 @@ function coerceCandleStickData(candleData::candlestickdata)
 end
 
 """
-    getcandles(config::config, instrument::String, lastn::Int = 10, price::String = "M", granularity::String = "M5";kw...)
-    getcandles(config::config, instrument::String, from::DateTime, to::DateTime, price::String = "M", granularity::AbstractString = "M5";kw...)
-    getcandles(config::config, instrument::String, from::DateTime, n::Int = 10, price::String = "M", granularity::AbstractString = "M5";kw...)
-    getcandles(config::config, instrument::String, n::Int, to::DateTime, price::String = "M", granularity::AbstractString = "M5";kw...)
-    getcandles(config::config, instrument::String, from::DateTime, price::String = "M", granularity::AbstractString = "M5";kw...)
+    getcandles(config::config, instrument::String, lastn::Int = 10, price::String = "M", granularity::String = "M5";kwargs...)
+    getcandles(config::config, instrument::String, from::DateTime, to::DateTime, price::String = "M", granularity::AbstractString = "M5";kwargs...)
+    getcandles(config::config, instrument::String, from::DateTime, n::Int = 10, price::String = "M", granularity::AbstractString = "M5";kwargs...)
+    getcandles(config::config, instrument::String, n::Int, to::DateTime, price::String = "M", granularity::AbstractString = "M5";kwargs...)
+    getcandles(config::config, instrument::String, from::DateTime, price::String = "M", granularity::AbstractString = "M5";kwargs...)
 
 Get candle information of a given instrument and returns a Candle struct
 Information includes: time, granularity, open, high, low, close, volume and a complete indicator
@@ -83,24 +83,22 @@ getcandles has five methods differing in how to request the number of candles to
                  "H1","H2","H3","H4","H6","H8","H12","D","W","M"]
 
 # Keyword Arguments (TODO)
-    smooth, includeFirst, dailyaligment, alignmentTimezone, weeklyAlignment
+    smooth::Bool, includeFirst::Bool, dailyaligment::Int, alignmentTimezone::String, weeklyAlignment::String
 
 # Examples
     getcandles(userdata,"EUR_USD",10,"A","M30")
     getcandles(userdata,"EUR_JPY",DateTime(2019,1,1),DateTime(2019,1,31),"B","H1")
-    getcandles(userdata,"EUR_CHF",10,DateTime(2019,1,31),"AB","M5")
     getcandles(userdata,"EUR_USD",DateTime(2019,1,31),10,"A","M30")
+    getcandles(userdata,"EUR_CHF",10,DateTime(2019,1,31),"AB","M5")
     getcandles(userdata,"EUR_USD",DateTime(2019,1,31),"M","D")
 
 """
 #Is it possible to handle combinations of count,fromDate, toDate with fewer methods?
-function getcandles(config::config, instrument::String, lastn::Int, price::String="M", granularity::String="M5";kw...)
-
-    #TODO kw-> smooth::Bool, includeFirst::Bool, dailyaligment::Int, alignmentTimezone::String, weeklyAlignment::String)
+function getcandles(config::config, instrument::String, lastn::Int, price::String="M", granularity::String="M5";kwargs...)
 
     r = HTTP.get(string("https://", config.hostname, "/v3/instruments/", instrument, "/candles"),
         ["Authorization" => string("Bearer ", config.token), "Accept-Datetime-Format" => config.datetime];
-        query = Dict("price" => price, "granularity" => granularity, "count" => lastn))
+        query = push!(Dict(),"price" => price, "granularity" => granularity, "count" => lastn, kwargs...))
     
     if r.status != 200
         println(r.status)
@@ -117,16 +115,14 @@ function getcandles(config::config, instrument::String, lastn::Int, price::Strin
 
 end
 
-function getcandles(config::config,instrument::String, from::DateTime, to::DateTime, price::String = "M", granularity::String = "M5";kw...)
-    
-    #TODO kw-> smooth::Bool, includeFirst::Bool, dailyaligment::Int, alignmentTimezone::String, weeklyAlignment::String)
-    
+function getcandles(config::config,instrument::String, from::DateTime, to::DateTime, price::String = "M", granularity::String = "M5";kwargs...)
+        
     from = Dates.format(from, "yyyy-mm-ddTHH:MM:SS.000000000Z")
     to = Dates.format(to, "yyyy-mm-ddTHH:MM:SS.000000000Z")
 
     r = HTTP.get(string("https://", config.hostname, "/v3/instruments/", instrument, "/candles"),
         ["Authorization" => string("Bearer ", config.token), "Accept-Datetime-Format" => config.datetime];
-        query = Dict("price" => price, "granularity" => granularity,"fromDate" => from, "toDate" => to))
+        query = push!(Dict(),"price" => price, "granularity" => granularity,"fromDate" => from, "toDate" => to,kwargs...))
         
     if r.status != 200
         println(r.status)
@@ -142,15 +138,13 @@ function getcandles(config::config,instrument::String, from::DateTime, to::DateT
     return temp
 end
 
-function getcandles(config::config, instrument::String, from::DateTime, n::Int, price::String = "M", granularity::String = "M5";kw...)
-    
-    #TODO kw-> smooth::Bool, includeFirst::Bool, dailyaligment::Int, alignmentTimezone::String, weeklyAlignment::String)
+function getcandles(config::config, instrument::String, from::DateTime, n::Int, price::String = "M", granularity::String = "M5";kwargs...)
     
     from = Dates.format(from, "yyyy-mm-ddTHH:MM:SS.000000000Z")
 
     r = HTTP.get(string("https://", config.hostname, "/v3/instruments/", instrument, "/candles"),
         ["Authorization" => string("Bearer ", config.token), "Accept-Datetime-Format" => config.datetime];
-        query = Dict("price" => price, "granularity" => granularity,"count" => n, "fromDate" => from))
+        query = push!(Dict(),"price" => price, "granularity" => granularity,"count" => n, "fromDate" => from,kwargs...))
         
     if r.status != 200
         println(r.status)
@@ -166,15 +160,14 @@ function getcandles(config::config, instrument::String, from::DateTime, n::Int, 
     return temp
 end
 
-function getcandles(config::config, instrument::String, n::Int,to::DateTime, price::String = "M", granularity::String = "M5";kw...)
-    
-    #TODO kw-> smooth::Bool, includeFirst::Bool, dailyaligment::Int, alignmentTimezone::String, weeklyAlignment::String)
-    
+function getcandles(config::config, instrument::String, n::Int,to::DateTime, price::String = "M", granularity::String = "M5";kwargs...)
+
+        
     to = Dates.format(to, "yyyy-mm-ddTHH:MM:SS.000000000Z")
 
     r = HTTP.get(string("https://", config.hostname, "/v3/instruments/", instrument, "/candles"),
         ["Authorization" => string("Bearer ", config.token), "Accept-Datetime-Format" => config.datetime];
-        query = Dict("price" => price, "granularity" => granularity,"count" => n, "toDate" => to))
+        query = push!(Dict(),"price" => price, "granularity" => granularity,"count" => n, "toDate" => to, kwargs...))
         
     if r.status != 200
         println(r.status)
@@ -190,15 +183,13 @@ function getcandles(config::config, instrument::String, n::Int,to::DateTime, pri
     return temp
 end
 
-function getcandles(config::config, instrument::String, from::DateTime, price::String = "M", granularity::String = "M5";kw...)
-
-    #TODO kw-> smooth::Bool, includeFirst::Bool, dailyaligment::Int, alignmentTimezone::String, weeklyAlignment::String)
+function getcandles(config::config, instrument::String, from::DateTime, price::String = "M", granularity::String = "M5";kwargs...)
     
     from = Dates.format(from, "yyyy-mm-ddTHH:MM:SS.000000000Z")
 
     r = HTTP.get(string("https://", config.hostname, "/v3/instruments/", instrument, "/candles"),
         ["Authorization" => string("Bearer ", config.token), "Accept-Datetime-Format" => config.datetime];
-        query = Dict("price" => price, "granularity" => granularity,"fromDate" => from))
+        query = push!(Dict(),"price" => price, "granularity" => granularity,"fromDate" => from, kwargs...))
         
     if r.status != 200
         println(r.status)
