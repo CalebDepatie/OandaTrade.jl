@@ -1,12 +1,13 @@
-authors = ["Caleb Depatie <calebd7@hotmail.com>"]
 name = "Julianda"
 uuid = "07dd2640-189c-11ea-0deb-23df4a1bee01"
+authors = ["Caleb Depatie <calebd7@hotmail.com>"]
 version = "0.3.0"
 
 [deps]
-YAML = "ddb6d928-2868-570f-bddf-ab3f9cf99eb6"
+CodecZlib = "944b1d66-785c-5afd-91f1-9de20f533193"
 HTTP = "cd3eb016-35fb-5094-929b-558a96fad6f3"
 JSON3 = "0f8b85d8-7281-11e9-16c2-39a750bddbf1"
+YAML = "ddb6d928-2868-570f-bddf-ab3f9cf99eb6"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
