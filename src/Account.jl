@@ -257,7 +257,7 @@ function setAccountConfig(config, alias::String, marginRate::String)
     if r.status != 200
         println(r.status)
     end
-    println("Account was configured successfully")
+    return true
 end
 
 end
