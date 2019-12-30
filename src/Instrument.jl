@@ -9,7 +9,7 @@ mutable struct candlestickdata
     h   #high
     l   #low
     c   #close
-    
+
     candlestickdata() = new()
 end
 
@@ -102,8 +102,8 @@ function getcandles(config::config, instrument::String, lastn::Int, price::Strin
     
     if r.status != 200
         println(r.status)
-    end    
-        
+    end
+
     temp = JSON3.read(r.body,candles)
 
     #type coersions
@@ -126,7 +126,7 @@ function getcandles(config::config,instrument::String, from::DateTime, to::DateT
         
     if r.status != 200
         println(r.status)
-    end    
+    end
 
     temp = JSON3.read(r.body,candles)
 
@@ -148,7 +148,7 @@ function getcandles(config::config, instrument::String, from::DateTime, n::Int, 
         
     if r.status != 200
         println(r.status)
-    end    
+    end
 
     temp = JSON3.read(r.body,candles)
 
@@ -171,7 +171,7 @@ function getcandles(config::config, instrument::String, n::Int,to::DateTime, pri
         
     if r.status != 200
         println(r.status)
-    end    
+    end
 
     temp = JSON3.read(r.body,candles)
 
@@ -193,7 +193,7 @@ function getcandles(config::config, instrument::String, from::DateTime, price::S
         
     if r.status != 200
         println(r.status)
-    end    
+    end
 
     temp = JSON3.read(r.body,candles)
 
