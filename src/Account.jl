@@ -225,7 +225,7 @@ end
     inst must be a string of instrument names formatted as a csv
     if inst is nothing then all instruments will be returned
 """
-function getAccountInstruments(config, inst)
+function getAccountInstruments(config, inst=nothing)
         request = string("https://", config.hostname, "/v3/accounts/", config.account, "/instruments")
         if !isnothing(inst)
             request = string(request, "?instruments=", inst)
