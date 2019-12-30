@@ -1,7 +1,5 @@
 using Test
 
-#TODO: More comprehensive testing
-
 @testset "account" begin
     include("account_test.jl")
 end
