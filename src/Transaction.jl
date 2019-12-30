@@ -71,3 +71,5 @@ mutable struct transaction
     type
     units
 end
+
+end
