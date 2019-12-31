@@ -35,6 +35,8 @@ end
 """
     getTransactionPages(config::config; from::DateTime=nothing, to::DateTime=Dates.now(), pageSize::Int=100, type::String=nothing)
 
+    Returns a struct. Field :pages includes the urls for getting the transactions in the given timeframe
+
 # Example
 
     getTransactionPages(userdata, from=DateTime(2019,5,31),type="MARKET_ORDER,STOP_LOSS_ORDER")
@@ -60,14 +62,21 @@ end
 #/accounts/{accountID}/transactions/{transactionID} Endpoint
 #------------------------------------------------------------------------------------
 mutable struct transaction
-    id
-    time
-    userID
-    accountID
-    batchID
-    requestID
-    type
-    units
+    transaction
+    lastTransactionID
+
+    transaction() = new()
+end
+
+#------------------------------------------------------------------------------------
+#/accounts/{accountID}/transactions/idrange  Endpoint
+#/accounts/{accountID}/transactions/sinceid  Endpoint
+#------------------------------------------------------------------------------------
+mutable struct transactions
+    transactions
+    lastTransactionID
+
+    transactions() = new()
 end
 
 end
