@@ -1,5 +1,5 @@
 module Pricing
-using HTTP, JSON3
+using HTTP, JSON3, Dates
 
 "Ask / Bid pricing data"
 mutable struct priceData
@@ -57,8 +57,21 @@ function coercePrice(price::price)
     return price
 end
 
+"Exception thrown when the market is closed on the weekend"
+struct ClosedMarketException <: Exception
+end
+
 "Get the most recent price update of an instrument"
 function getPrice(config, instrument)
+    dt = Dates.now()
+    if Dates.dayofweek(dt) >= 5
+        if Dates.dayofweek(dt) == 5 & Dates.hour(dt) < 4
+        elseif Dates.dayofweek(dt) == 7 & Dates.hour(dt) >= 5
+        else
+            throw(ClosedMarketException())
+        end
+    end
+
     query = string("instruments=", instrument)
     r = HTTP.request("GET", string("https://", config.hostname, "/v3/accounts/", config.account, "/pricing?", query),
     ["Authorization" => string("Bearer ", config.token), "Accept-Datetime-Format" => config.datetime])
