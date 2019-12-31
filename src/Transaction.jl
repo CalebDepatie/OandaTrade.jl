@@ -21,9 +21,9 @@ JSON3.StructType(::Type{transactionPages}) = JSON3.Mutable()
 
 # Conversions to proper Julia types
 function coerceTransactionPages(tpages::transactionPages)
-    
+
     RFC = Dates.DateFormat("yyyy-mm-ddTHH:MM:SS.sssssssssZ")
-    
+
     isdefined(tpages,:from) && (tpages.from = DateTime(tpages.from, RFC))
     tpages.to = DateTime(tpages.to, RFC)
     tpages.lastTransactionID = parse(Int,tpages.lastTransactionID)
@@ -33,14 +33,13 @@ function coerceTransactionPages(tpages::transactionPages)
 end
 
 """
-    get_transactionpages(config::config; from::DateTime=nothing, to::DateTime=Dates.now(), pageSize::Int=100, type::String=nothing)
+    getTransactionPages(config::config; from::DateTime=nothing, to::DateTime=Dates.now(), pageSize::Int=100, type::String=nothing)
 
 # Example
 
-    get_transactionpages(userdata, from=DateTime(2019,5,31),type="MARKET_ORDER,STOP_LOSS_ORDER")
+    getTransactionPages(userdata, from=DateTime(2019,5,31),type="MARKET_ORDER,STOP_LOSS_ORDER")
 """
-
-function get_transactionpages(config::config; from::DateTime=nothing, to::DateTime=Dates.now(), pageSize::Int=100,type::String=nothing)
+function getTransactionPages(config; from::DateTime=nothing, to::DateTime=Dates.now(), pageSize::Int=100,type::String=nothing)
 
     q = Dict("to"=>Dates.format(to, "yyyy-mm-ddTHH:MM:SS.000000000Z"),"pageSize"=>pageSize)
     !isnothing(from) && push!(q,"from"=>Dates.format(from, "yyyy-mm-ddTHH:MM:SS.000000000Z"))
