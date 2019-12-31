@@ -10,7 +10,7 @@ makedocs(
     sitename = "Julianda",
     format = Documenter.HTML(),
     pages = ["Introduction" => "index.md",
-            "Endpoints" => ["account.md", "config.md"]]
+            "Endpoints" => ["config.md", "account.md", "instrument.md"]]
 )
 
 deploydocs(repo = "github.com/CalebDepatie/Julianda.git")
