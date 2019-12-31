@@ -54,7 +54,6 @@ function get_transactionpages(config::config; from::DateTime=nothing, to::DateTi
     end
 
     return JSON3.read(r.body,transactionPages) |> coerceTransactionPages
-
 end
 
 
