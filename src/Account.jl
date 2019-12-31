@@ -9,7 +9,39 @@ include("Order.jl")
 
 # TODO: Add strict types / Add type of coersion
 
-"The account struct given by Oanda"
+"""
+The account struct given by Oanda
+
+# Fields
+- NAV: The Net Asset Value of an account
+- alias: User defined alias if one exists
+- balance: Current Account Balance
+- createdByUserID: The User ID of the account creator
+- createdTime: The time the account was created
+- currency: The primary currency of the account
+- hedgingEnabled: If the account is allowed to hedge
+- id: The account ID
+- lastTransactionID: The last transaction ID
+- marginAvailable: The margin still available on the account
+- marginCloseoutMarginUsed: The closeout margin used
+- marginCloseoutNAV: Margins closeout NAV
+- marginCloseoutPercent: Margin closeout percent
+- marginCloseoutPositionValue: Margin closeout position value
+- marginCloseoutUnrealizedPL: Margin closeout unrealised profit/loss
+- marginRate: The margin rate
+- marginUsed: Amount of margin used
+- openPositionCount: Number of open positions
+- openTradeCount: Number of open trades
+- orders: Orders of the account
+- pendingOrderCount: Number of pending orders
+- pl: The profit or loss over the lifetime of the account
+- positionValue: Value of an accounts open positions
+- positions: Positions of the account
+- resettablePL: The resetable profit/loss since last reset
+- trades: Trades of the account
+- unrealizedPL: The unrealised profit/loss of the account
+- withdrawalLimit: The withdrawal limit of the account
+"""
 mutable struct account
     NAV # The Net Asset Value of an account
     alias # User defined alias if one exists
@@ -65,7 +97,22 @@ mutable struct accountsList
     accountsList() = new()
 end
 
-"Tradeable Instrument data"
+"""
+Tradeable Instrument data
+
+# Fields
+- displayName: Instrument name
+- displayPrecision: Decimal precision of the instrument
+- marginRate: Margin rate on the instrument
+- maximumOrderUnits: Max units that can be ordered
+- maximumPositionSize: max position size of the instrument
+- maximumTrailingStopDistance: max trailing stop distance
+- minimumTrailingStopDistance: min trailing stop distance
+- name: Request usable instrument name
+- pipLocation: current pip location
+- tradeUnitsPrecision: Decimal precision of trade units
+- type: Type of instrument
+"""
 mutable struct instrumentDetail
     displayName # Instrument name
     displayPrecision # Decimal precision of the instrument
@@ -168,7 +215,11 @@ function coerceInstrumentDetail(inst::instrumentDetail)
     return inst
 end
 
-"Returns a list of all account IDs and tags authorized for the given Token"
+"""
+    listAccounts(config::config)
+
+Returns a list of all account IDs and tags authorized for the given Token
+"""
 function listAccounts(config)
     r = HTTP.request("GET", string("https://", config.hostname, "/v3/accounts"),
     ["Authorization" => string("Bearer ", config.token), "Accept-Datetime-Format" => config.datetime])
@@ -182,7 +233,11 @@ function listAccounts(config)
 
 end
 
-"Returns an Oanda account struct when given a valid config"
+"""
+    getAccount(config::config)
+
+Returns an Oanda account struct when given a valid config
+"""
 function getAccount(config)
     r = HTTP.request("GET", string("https://", config.hostname, "/v3/accounts/", config.account),
     ["Authorization" => string("Bearer ", config.token), "Accept-Datetime-Format" => config.datetime])
@@ -201,7 +256,12 @@ function getAccount(config)
 
 end
 
-"Similar to getAccount but doesnt return the order & trade & positions lists"
+"""
+    getAccountSummary(config::config)
+
+Similar to getAccount but doesnt return the order & trade & positions lists, however
+it still returns a full account struct, just with these fields left undefined
+"""
 function getAccountSummary(config)
     r = HTTP.request("GET", string("https://", config.hostname, "/v3/accounts/", config.account, "/summary"),
     ["Authorization" => string("Bearer ", config.token), "Accept-Datetime-Format" => config.datetime])
@@ -221,9 +281,12 @@ function getAccountSummary(config)
 end
 
 """
-    Returns a list of tradeable instruments details for the account
-    inst must be a string of instrument names formatted as a csv
-    if inst is nothing then all instruments will be returned
+    getAccountInstruments(config::config, inst=nothing)
+
+Returns a list of tradeable instruments details for the account
+
+# Arguments
+- inst: Can be left blank to return all tradeable instruments, or as a string csv of instruments to return their details
 """
 function getAccountInstruments(config, inst=nothing)
         request = string("https://", config.hostname, "/v3/accounts/", config.account, "/instruments")
@@ -247,7 +310,15 @@ function getAccountInstruments(config, inst=nothing)
         return instruments
 end
 
-"Set client configurable configuration settings"
+"""
+    setAccountConfig(config::config, alias::String, marginRate::String)
+
+Set client configurable configuration settings
+
+# Arguments
+- alias: The account alias
+- marginRate: The desired decimal margin rate formatted as a string
+"""
 function setAccountConfig(config, alias::String, marginRate::String)
     data = accountConfig(alias, marginRate)
     r = HTTP.request("PATCH", string("https://", config.hostname, "/v3/accounts/", config.account, "/configuration"),
