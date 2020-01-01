@@ -24,7 +24,7 @@ function coerceTransactionPages(tpages::transactionPages)
 
     RFC = Dates.DateFormat("yyyy-mm-ddTHH:MM:SS.sssssssssZ")
 
-    tpages.from = DateTime(tpages.from[1:23], RFC) #DateTime does not work properly with nanoseconds
+    tpages.from = DateTime(tpages.from[1:23], RFC) #DateTime has milliseconds precision. Can only use 23 characters...
     tpages.to = DateTime(tpages.to[1:23], RFC)
     tpages.lastTransactionID = parse(Int,tpages.lastTransactionID)
 
