@@ -42,7 +42,7 @@ function coerceCandleStick(config,candle::candlestick)
 
     RFC = Dates.DateFormat("yyyy-mm-ddTHH:MM:SS.sssssssssZ")
 
-    candle.time = (config.datetime == "RFC3339" ? DateTime(candle.time, RFC) : unix2datetime(candle.time))
+    candle.time = (config.datetime == "RFC3339" ? DateTime(candle.time, RFC) : unix2datetime(parse(Float32,candle.time)))
     isdefined(candle,:bid) && (candle.bid = coerceCandleStickData(candle.bid))
     isdefined(candle,:ask) && (candle.ask = coerceCandleStickData(candle.ask))
     isdefined(candle,:mid) && (candle.mid = coerceCandleStickData(candle.mid))
