@@ -77,7 +77,7 @@ getCandles has five methods depending on how the candles to retrieve are selecte
 - from: all candles from the specified date
 
 # Arguments
-- 'config::config': a valid struct with user configuracion data
+- 'config::config': a valid struct with user configuration data
 - 'instrument::String": a valid instrument (e.g. "EUR_USD")
 - 'price::String': "A" for ask, "B" for bid, "M" for medium or a combination ot them
 - 'granularity::String': a valid time interval ["S5","S10","S15","S30","M1","M2","M4","M5","M10","M15","M30","H1","H2","H3","H4","H6","H8","H12","D","W","M"]
@@ -108,7 +108,6 @@ function getCandles(config, instrument::String, lastn::Int, price::String="M", g
     end
 
     temp = JSON3.read(r.body,candles)
-
     #type coersions
     for c in temp.candles
        c = coerceCandleStick(config,c)
@@ -164,8 +163,6 @@ function getCandles(config, instrument::String, from::DateTime, n::Int, price::S
 end
 
 function getCandles(config, instrument::String, n::Int,to::DateTime, price::String = "M", granularity::String = "M5";kwargs...)
-
-
         
     to = Dates.format(to, "yyyy-mm-ddTHH:MM:SS.000000000Z")
 
