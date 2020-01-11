@@ -8,8 +8,3 @@ CurrentModule = Julianda.Position
 ```@docs
 
 ```
-
-## Structs
-```@docs
-
-```

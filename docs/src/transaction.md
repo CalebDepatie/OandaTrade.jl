@@ -1,4 +1,4 @@
-# Positions
+# Transactions
 
 ```@meta
 CurrentModule = Julianda.Transaction
