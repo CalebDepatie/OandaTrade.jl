@@ -23,7 +23,8 @@ Loads a YAML config
 """
 function loadConfig(path::String)
     data = YAML.load(open(path))
-    temp = config(data["hostname"], data["streaming_hostname"], data["token"], data["username"], data["account"], data["datetime"])
+    temp = config(data["hostname"], data["streaming_hostname"], data["token"],
+    data["username"], data["account"], "RFC3339")
     return temp
 end
 
@@ -41,7 +42,6 @@ function saveConfig(path::String, config::config)
     conf_string = string("hostname: ", config.hostname,
                         "\nstreaming_hostname: ", config.streamingHostname,
                         "\ntoken: ", config.token,
-                        "\ndatetime: ", config.datetime,
                         "\nusername: ", config.username,
                         "\naccount: ", config.account
                         )
