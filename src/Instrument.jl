@@ -42,7 +42,7 @@ function coerceCandleStick(config,candle::candlestick)
 
     RFC = Dates.DateFormat("yyyy-mm-ddTHH:MM:SS.sssssssssZ")
 
-    candle.time = (config.datetime == "RFC3339" ? DateTime(candle.time, RFC) : unix2datetime(candle.time))
+    candle.time = DateTime(candle.time, RFC)
     isdefined(candle,:bid) && (candle.bid = coerceCandleStickData(candle.bid))
     isdefined(candle,:ask) && (candle.ask = coerceCandleStickData(candle.ask))
     isdefined(candle,:mid) && (candle.mid = coerceCandleStickData(candle.mid))
@@ -102,7 +102,7 @@ function getCandles(config, instrument::String, lastn::Int, price::String="M", g
     r = HTTP.get(string("https://", config.hostname, "/v3/instruments/", instrument, "/candles"),
         ["Authorization" => string("Bearer ", config.token), "Accept-Datetime-Format" => config.datetime];
         query = push!(Dict(),"price" => price, "granularity" => granularity, "count" => lastn, kwargs...))
-    
+
     if r.status != 200
         println(r.status)
     end
@@ -126,7 +126,7 @@ function getCandles(config,instrument::String, from::DateTime, to::DateTime, pri
     r = HTTP.get(string("https://", config.hostname, "/v3/instruments/", instrument, "/candles"),
         ["Authorization" => string("Bearer ", config.token), "Accept-Datetime-Format" => config.datetime];
         query = push!(Dict(),"price" => price, "granularity" => granularity,"fromDate" => from, "toDate" => to,kwargs...))
-        
+
     if r.status != 200
         println(r.status)
     end
@@ -148,7 +148,7 @@ function getCandles(config, instrument::String, from::DateTime, n::Int, price::S
     r = HTTP.get(string("https://", config.hostname, "/v3/instruments/", instrument, "/candles"),
         ["Authorization" => string("Bearer ", config.token), "Accept-Datetime-Format" => config.datetime];
         query = push!(Dict(),"price" => price, "granularity" => granularity,"count" => n, "fromDate" => from,kwargs...))
-        
+
     if r.status != 200
         println(r.status)
     end
@@ -165,14 +165,12 @@ end
 
 function getCandles(config, instrument::String, n::Int,to::DateTime, price::String = "M", granularity::String = "M5";kwargs...)
 
-
-        
     to = Dates.format(to, "yyyy-mm-ddTHH:MM:SS.000000000Z")
 
     r = HTTP.get(string("https://", config.hostname, "/v3/instruments/", instrument, "/candles"),
         ["Authorization" => string("Bearer ", config.token), "Accept-Datetime-Format" => config.datetime];
         query = push!(Dict(),"price" => price, "granularity" => granularity,"count" => n, "toDate" => to, kwargs...))
-        
+
     if r.status != 200
         println(r.status)
     end
@@ -194,7 +192,7 @@ function getCandles(config, instrument::String, from::DateTime, price::String = 
     r = HTTP.get(string("https://", config.hostname, "/v3/instruments/", instrument, "/candles"),
         ["Authorization" => string("Bearer ", config.token), "Accept-Datetime-Format" => config.datetime];
         query = push!(Dict(),"price" => price, "granularity" => granularity,"fromDate" => from, kwargs...))
-        
+
     if r.status != 200
         println(r.status)
     end
@@ -225,7 +223,7 @@ mutable struct orderBook
     price
     bucketWidth
     buckets::Vector{orderBookBucket}
-   
+
     orderBook()=new()
 end
 
@@ -279,13 +277,13 @@ function getOrderBook(config,instrument::String, time::DateTime=now())
 
     if r.status != 200
         println(r.status)
-    end    
+    end
 
     unzipr = GzipDecompressorStream(IOBuffer(String(r.body))) #Response is compressed
-  
+
     temp = JSON3.read(unzipr,orderBookTopLayer)
 
-    temp.orderBook = coerceorderBook(temp.orderBook)
+    temp.orderBook = coerceOrderBook(temp.orderBook)
 
     return temp.orderBook
 end
@@ -306,7 +304,7 @@ mutable struct positionBook
     price
     bucketWidth
     buckets::Vector{positionBookBucket}
-   
+
     positionBook()=new()
 end
 
@@ -360,10 +358,10 @@ function getPositionBook(config,instrument::String, time::DateTime=now())
 
     if r.status != 200
         println(r.status)
-    end    
+    end
 
     unzipr = GzipDecompressorStream(IOBuffer(String(r.body))) #Response is compressed
-  
+
     temp = JSON3.read(unzipr,positionBookTopLayer)
 
     temp.positionBook = coercePositionBook(temp.positionBook)

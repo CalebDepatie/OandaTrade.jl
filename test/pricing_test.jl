@@ -1,6 +1,4 @@
-using Test, Dates
-
-using Julianda
+using Test, Dates, Julianda
 
 foo = Julianda.Config.loadConfig("../config")
 

@@ -51,7 +51,8 @@ function coercePrice(price::price)
         push!(temp, bid)
     end
     price.bids = temp
-
+    RFC = Dates.DateFormat("yyyy-mm-ddTHH:MM:SS.sssssssssZ")
+    price.time = DateTime(first(price.time,23), RFC)
     price.closeoutBid = parse(Float32, price.closeoutBid)
     price.closeoutAsk = parse(Float32, price.closeoutAsk)
     return price

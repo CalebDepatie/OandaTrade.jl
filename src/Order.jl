@@ -1,5 +1,5 @@
 module Order
-using JSON3, HTTP
+using JSON3, HTTP, Dates
 
 "Stop loss settings for an order"
 mutable struct stopLossOnFill
@@ -45,6 +45,8 @@ end
 
 "Coerce a given Order into its proper types (Used internally)"
 function coerceOrder(order::order)
+    RFC = Dates.DateFormat("yyyy-mm-ddTHH:MM:SS.sssssssssZ")
+    order.createTime = DateTime(first(order.createTime,23), RFC)
     order.price = parse(Float32, order.price)
     order.units = parse(Int32, order.units)
     order.stopLossOnFill.price = parse(Float32, order.stopLossOnFill.price)
