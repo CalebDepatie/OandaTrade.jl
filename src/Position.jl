@@ -1,5 +1,5 @@
 module Position
-using JSON3
+using JSON3, HTTP
 
 "Individual data for positions (A Long or Short)"
 mutable struct posData
@@ -24,6 +24,13 @@ mutable struct position
     position() = new()
 end
 
+"Top layer for positions endpoint"
+mutable struct positionTopLayer
+    positions::Vector{position}
+
+    positionTopLayer() = new()
+end
+
 "Coerce a given Position into its proper types (Used internally)"
 function coercePos(pos::position)
     pos.long.pl = parse(Float32, pos.long.pl)
@@ -45,6 +52,32 @@ end
 
 # Declaring JSON3 struct types
 JSON3.StructType(::Type{Position.position}) = JSON3.Mutable()
+JSON3.StructType(::Type{Position.positionTopLayer}) = JSON3.Mutable()
 JSON3.StructType(::Type{Position.posData}) = JSON3.Mutable()
+
+"""
+    listPositions(config)
+
+Returns a list of current positions
+"""
+function listPositions(config)
+    r = HTTP.request("GET", string("https://", config.hostname,
+                    "/v3/accounts/", config.account, "/positions"),
+    ["Authorization" => string("Bearer ", config.token),
+    "Accept-Datetime-Format" => config.datetime])
+    if r.status != 200
+        println(r.status)
+    end
+    data = JSON3.read(r.body, positionTopLayer)
+    data = data.positions
+
+    temp = Vector{position}()
+    for pos in data
+        pos = coercePos(pos)
+        push!(temp, pos)
+    end
+
+    return temp
+end
 
 end

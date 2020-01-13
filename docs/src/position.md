@@ -6,5 +6,5 @@ CurrentModule = Julianda.Position
 
 ## Functions
 ```@docs
-
+Position.listPositions
 ```
