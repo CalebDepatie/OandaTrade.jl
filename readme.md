@@ -37,7 +37,7 @@ It is nearing what I would consider usable, please view the Docs to get started!
   * /accounts/{accountID}/trades/{tradeSpecifier}/clientExtensions
   * /accounts/{accountID}/trades/{tradeSpecifier}/orders
 * Position
-  * /accounts/{accountID}/positions
+  * ~~/accounts/{accountID}/positions~~
   * /accounts/{accountID}/openPositions
   * /accounts/{accountID}/positions/{instrument}
   * /accounts/{accountID}/positions/{instrument}/close

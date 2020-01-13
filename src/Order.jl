@@ -69,6 +69,8 @@ function placeOrder(config, instrument, units, TIF="FOK", priceBound="1.23", pos
     if r.status != 200
         println(r.status)
     end
+
+    return true
 end
 
 end
