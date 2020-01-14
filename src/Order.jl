@@ -60,13 +60,13 @@ JSON3.StructType(::Type{marketOrderRequest}) = JSON3.Struct()
 JSON3.StructType(::Type{orderRequest}) = JSON3.Struct()
 
 "Places an order"
-function placeOrder(config, instrument, units, TIF="FOK", priceBound="1.23", positionFill="DEFAULT")
+function placeOrder(config, instrument, units, TIF="FOK", priceBound="1.5", positionFill="DEFAULT")
     data = marketOrderRequest("MARKET", instrument, units, TIF, priceBound, positionFill)
     data = orderRequest(data)
     r = HTTP.request("POST", string("https://", config.hostname, "/v3/accounts/", config.account, "/orders"),
     ["Authorization" => string("Bearer ", config.token),
     "Accept-Datetime-Format" => config.datetime, "Content-Type" => "application/json"], JSON3.write(data))
-    if r.status != 200
+    if r.status != 201
         println(r.status)
     end
 

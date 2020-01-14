@@ -4,12 +4,12 @@ using Test
     include("account_test.jl")
 end
 
-@testset "order" begin
-    include("order_test.jl")
-end
-
 @testset "instrument" begin
     include("instrument_test.jl")
+end
+
+@testset "order" begin
+    include("order_test.jl")
 end
 
 @testset "position" begin
