@@ -9,4 +9,6 @@ CurrentModule = Julianda.Position
 Position.listPositions
 Position.listOpenPositions
 Position.getPosition
+Position.closePosition
+Position.closePositionFull
 ```

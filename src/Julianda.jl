@@ -1,5 +1,3 @@
-__precompile__(false)
-
 module Julianda
 
 # TODO: Expand the structs with full JSON info (Can be found on the definitions page of oanda)

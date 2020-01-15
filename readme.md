@@ -40,7 +40,7 @@ It is nearing what I would consider usable, please view the Docs to get started!
   * ~~/accounts/{accountID}/positions~~
   * ~~/accounts/{accountID}/openPositions~~
   * ~~/accounts/{accountID}/positions/{instrument}~~
-  * /accounts/{accountID}/positions/{instrument}/close
+  * ~~/accounts/{accountID}/positions/{instrument}/close~~
 * Transaction
   * ~~/accounts/{accountID}/transactions~~
   * ~~/accounts/{accountID}/transactions/{transactionID}~~

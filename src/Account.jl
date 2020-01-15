@@ -160,8 +160,14 @@ function coerceAccountSummary(acc::account)
     acc.marginCloseoutMarginUsed = parse(Float32, acc.marginCloseoutMarginUsed)
     acc.marginCloseoutNAV = parse(Float32, acc.marginCloseoutNAV)
     acc.marginCloseoutPercent = parse(Float32, acc.marginCloseoutPercent)
-    acc.marginCloseoutPositionValue = parse(Float32, acc.marginCloseoutPositionValue)
-    acc.marginCloseoutUnrealizedPL = parse(Float32, acc.marginCloseoutUnrealizedPL)
+    acc.marginCloseoutPositionValue = parse(
+        Float32,
+        acc.marginCloseoutPositionValue,
+    )
+    acc.marginCloseoutUnrealizedPL = parse(
+        Float32,
+        acc.marginCloseoutUnrealizedPL,
+    )
     acc.marginRate = parse(Float32, acc.marginRate)
     acc.marginUsed = parse(Float32, acc.marginUsed)
     #acc.openPositionCount = parse(Int32, acc.openPositionCount)
@@ -209,8 +215,14 @@ function coerceInstrumentDetail(inst::instrumentDetail)
     inst.marginRate = parse(Float32, inst.marginRate)
     inst.maximumOrderUnits = parse(Float64, inst.maximumOrderUnits)
     inst.maximumPositionSize = parse(Float32, inst.maximumPositionSize)
-    inst.maximumTrailingStopDistance = parse(Float32, inst.maximumTrailingStopDistance)
-    inst.minimumTrailingStopDistance = parse(Float32, inst.minimumTrailingStopDistance)
+    inst.maximumTrailingStopDistance = parse(
+        Float32,
+        inst.maximumTrailingStopDistance,
+    )
+    inst.minimumTrailingStopDistance = parse(
+        Float32,
+        inst.minimumTrailingStopDistance,
+    )
 
     return inst
 end
@@ -221,11 +233,14 @@ end
 Returns a list of all account IDs and tags authorized for the given Token
 """
 function listAccounts(config)
-    r = HTTP.request("GET", string("https://", config.hostname, "/v3/accounts"),
-    ["Authorization" => string("Bearer ", config.token), "Accept-Datetime-Format" => config.datetime])
-    if r.status != 200
-        println(r.status)
-    end
+    r = HTTP.request(
+        "GET",
+        string("https://", config.hostname, "/v3/accounts"),
+        [
+         "Authorization" => string("Bearer ", config.token),
+         "Accept-Datetime-Format" => config.datetime,
+        ],
+    )
 
     data = JSON3.read(r.body, accountsList)
 
@@ -239,11 +254,14 @@ end
 Returns an Oanda account struct when given a valid config
 """
 function getAccount(config)
-    r = HTTP.request("GET", string("https://", config.hostname, "/v3/accounts/", config.account),
-    ["Authorization" => string("Bearer ", config.token), "Accept-Datetime-Format" => config.datetime])
-    if r.status != 200
-        println(r.status)
-    end
+    r = HTTP.request(
+        "GET",
+        string("https://", config.hostname, "/v3/accounts/", config.account),
+        [
+         "Authorization" => string("Bearer ", config.token),
+         "Accept-Datetime-Format" => config.datetime,
+        ],
+    )
 
     temp = JSON3.read(r.body, topLayer)
 
@@ -263,11 +281,20 @@ Similar to getAccount but doesnt return the order & trade & positions lists, how
 it still returns a full account struct, just with these fields left undefined
 """
 function getAccountSummary(config)
-    r = HTTP.request("GET", string("https://", config.hostname, "/v3/accounts/", config.account, "/summary"),
-    ["Authorization" => string("Bearer ", config.token), "Accept-Datetime-Format" => config.datetime])
-    if r.status != 200
-        println(r.status)
-    end
+    r = HTTP.request(
+        "GET",
+        string(
+            "https://",
+            config.hostname,
+            "/v3/accounts/",
+            config.account,
+            "/summary",
+        ),
+        [
+         "Authorization" => string("Bearer ", config.token),
+         "Accept-Datetime-Format" => config.datetime,
+        ],
+    )
 
     temp = JSON3.read(r.body, topLayer)
 
@@ -288,26 +315,35 @@ Returns a list of tradeable instruments details for the account
 # Arguments
 - inst: Can be left blank to return all tradeable instruments, or as a string csv of instruments to return their details
 """
-function getAccountInstruments(config, inst=nothing)
-        request = string("https://", config.hostname, "/v3/accounts/", config.account, "/instruments")
-        if !isnothing(inst)
-            request = string(request, "?instruments=", inst)
-        end
-        r = HTTP.request("GET", request, ["Authorization" => string("Bearer ", config.token),
-        "Accept-Datetime-Format" => config.datetime])
-        if r.status != 200
-            println(r.status)
-        end
+function getAccountInstruments(config, inst = nothing)
+    request = string(
+        "https://",
+        config.hostname,
+        "/v3/accounts/",
+        config.account,
+        "/instruments",
+    )
+    if !isnothing(inst)
+        request = string(request, "?instruments=", inst)
+    end
+    r = HTTP.request(
+        "GET",
+        request,
+        [
+         "Authorization" => string("Bearer ", config.token),
+         "Accept-Datetime-Format" => config.datetime,
+        ],
+    )
 
-        data = JSON3.read(r.body, instrumentTopLayer)
-        data = data.instruments
-        instruments = Vector{instrumentDetail}()
-        for inst in data
-            inst = coerceInstrumentDetail(inst)
-            push!(instruments, inst)
-        end
+    data = JSON3.read(r.body, instrumentTopLayer)
+    data = data.instruments
+    instruments = Vector{instrumentDetail}()
+    for inst in data
+        inst = coerceInstrumentDetail(inst)
+        push!(instruments, inst)
+    end
 
-        return instruments
+    return instruments
 end
 
 """
@@ -321,13 +357,23 @@ Set client configurable configuration settings
 """
 function setAccountConfig(config, alias::String, marginRate::String)
     data = accountConfig(alias, marginRate)
-    r = HTTP.request("PATCH", string("https://", config.hostname, "/v3/accounts/", config.account, "/configuration"),
-    ["Authorization" => string("Bearer ", config.token),
-    "Accept-Datetime-Format" => config.datetime,
-    "Content-Type" => "application/json"], JSON3.write(data))
-    if r.status != 200
-        println(r.status)
-    end
+    r = HTTP.request(
+        "PATCH",
+        string(
+            "https://",
+            config.hostname,
+            "/v3/accounts/",
+            config.account,
+            "/configuration",
+        ),
+        [
+         "Authorization" => string("Bearer ", config.token),
+         "Accept-Datetime-Format" => config.datetime,
+         "Content-Type" => "application/json",
+        ],
+        JSON3.write(data),
+    )
+
     return true
 end
 

@@ -1,5 +1,5 @@
 module Pricing
-using HTTP, JSON3, Dates
+using HTTP, JSON3, Dates, CodecZlib
 
 "Ask / Bid pricing data"
 mutable struct priceData
@@ -52,15 +52,14 @@ function coercePrice(price::price)
     end
     price.bids = temp
     RFC = Dates.DateFormat("yyyy-mm-ddTHH:MM:SS.sssssssssZ")
-    price.time = DateTime(first(price.time,23), RFC)
+    price.time = DateTime(first(price.time, 23), RFC)
     price.closeoutBid = parse(Float32, price.closeoutBid)
     price.closeoutAsk = parse(Float32, price.closeoutAsk)
     return price
 end
 
 "Exception thrown when the market is closed on the weekend"
-struct ClosedMarketException <: Exception
-end
+struct ClosedMarketException <: Exception end
 
 "Get the most recent price update of an instrument"
 function getPrice(config, instrument)
@@ -74,18 +73,27 @@ function getPrice(config, instrument)
     end
 
     query = string("instruments=", instrument)
-    r = HTTP.request("GET", string("https://", config.hostname, "/v3/accounts/", config.account, "/pricing?", query),
-    ["Authorization" => string("Bearer ", config.token), "Accept-Datetime-Format" => config.datetime])
-    if r.status != 200
-        println(r.status)
-    end
-
+    r = HTTP.request(
+        "GET",
+        string(
+            "https://",
+            config.hostname,
+            "/v3/accounts/",
+            config.account,
+            "/pricing?",
+            query,
+        ),
+        [
+         "Authorization" => string("Bearer ", config.token),
+         "Accept-Datetime-Format" => config.datetime,
+        ],
+    )
     data = JSON3.read(r.body, priceTopLayer)
     temp = Vector{price}()
     for priceData in data.prices
         push!(temp, coercePrice(priceData))
     end
-    return temp
+    return temp[end]
 end
 
 end
