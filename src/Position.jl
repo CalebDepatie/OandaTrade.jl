@@ -58,10 +58,10 @@ function coercePos(pos::position)
 end
 
 # Declaring JSON3 struct types
-JSON3.StructType(::Type{Position.position}) = JSON3.Mutable()
-JSON3.StructType(::Type{Position.positionTopLayer}) = JSON3.Mutable()
-JSON3.StructType(::Type{Position.positionTopLayerSingle}) = JSON3.Mutable()
-JSON3.StructType(::Type{Position.posData}) = JSON3.Mutable()
+JSON3.StructType(::Type{position}) = JSON3.Mutable()
+JSON3.StructType(::Type{positionTopLayer}) = JSON3.Mutable()
+JSON3.StructType(::Type{positionTopLayerSingle}) = JSON3.Mutable()
+JSON3.StructType(::Type{posData}) = JSON3.Mutable()
 
 """
     listPositions(config)
@@ -69,13 +69,20 @@ JSON3.StructType(::Type{Position.posData}) = JSON3.Mutable()
 Returns a list of current positions
 """
 function listPositions(config)
-    r = HTTP.request("GET", string("https://", config.hostname,
-                    "/v3/accounts/", config.account, "/positions"),
-    ["Authorization" => string("Bearer ", config.token),
-    "Accept-Datetime-Format" => config.datetime])
-    if r.status != 200
-        println(r.status)
-    end
+    r = HTTP.request(
+        "GET",
+        string(
+            "https://",
+            config.hostname,
+            "/v3/accounts/",
+            config.account,
+            "/positions",
+        ),
+        [
+         "Authorization" => string("Bearer ", config.token),
+         "Accept-Datetime-Format" => config.datetime,
+        ],
+    )
     data = JSON3.read(r.body, positionTopLayer)
     data = data.positions
 
@@ -94,13 +101,20 @@ end
 Returns a list of current positions that have an open trade
 """
 function listOpenPositions(config)
-    r = HTTP.request("GET", string("https://", config.hostname,
-                    "/v3/accounts/", config.account, "/openPositions"),
-    ["Authorization" => string("Bearer ", config.token),
-    "Accept-Datetime-Format" => config.datetime])
-    if r.status != 200
-        println(r.status)
-    end
+    r = HTTP.request(
+        "GET",
+        string(
+            "https://",
+            config.hostname,
+            "/v3/accounts/",
+            config.account,
+            "/openPositions",
+        ),
+        [
+         "Authorization" => string("Bearer ", config.token),
+         "Accept-Datetime-Format" => config.datetime,
+        ],
+    )
     data = JSON3.read(r.body, positionTopLayer)
     data = data.positions
 
@@ -119,18 +133,88 @@ end
 Returns position data for a specified instrument
 """
 function getPosition(config, instrument)
-    r = HTTP.request("GET", string("https://", config.hostname,
-                    "/v3/accounts/", config.account, "/positions/", instrument),
-    ["Authorization" => string("Bearer ", config.token),
-    "Accept-Datetime-Format" => config.datetime])
-    if r.status != 200
-        println(r.status)
-    end
+    r = HTTP.request(
+        "GET",
+        string(
+            "https://",
+            config.hostname,
+            "/v3/accounts/",
+            config.account,
+            "/positions/",
+            instrument,
+        ),
+        [
+         "Authorization" => string("Bearer ", config.token),
+         "Accept-Datetime-Format" => config.datetime,
+        ],
+    )
     data = JSON3.read(r.body, positionTopLayerSingle)
 
     data = coercePos(data.position)
 
     return data
+end
+
+"""
+    closePositionFull(config, instrument, long=true)
+
+Closes a position completely
+"""
+function closePositionFull(config, instrument, long=true)
+    data = ""
+    if long
+        data = "{\"longUnits\": \"ALL\"}"
+    else
+        data = "{\"shortUnits\": \"ALL\"}"
+    end
+    r = HTTP.request(
+        "PUT",
+        string(
+            "https://",
+            config.hostname,
+            "/v3/accounts/",
+            config.account,
+            "/positions/",
+            instrument,
+            "/close"
+        ),
+        [
+         "Authorization" => string("Bearer ", config.token),
+         "Accept-Datetime-Format" => config.datetime,
+          "Content-Type" => "application/json",
+        ],
+        data,
+    )
+
+    return true
+end
+
+"""
+    closePosition(config, instrument, LongUnits=NONE, ShortUnits=NONE)
+
+Closes a positions units based on input
+"""
+function closePosition(config, instrument, longUnits="NONE", shortUnits="NONE")
+    r = HTTP.request(
+        "PUT",
+        string(
+            "https://",
+            config.hostname,
+            "/v3/accounts/",
+            config.account,
+            "/positions/",
+            instrument,
+            "/close"
+        ),
+        [
+         "Authorization" => string("Bearer ", config.token),
+         "Accept-Datetime-Format" => config.datetime,
+          "Content-Type" => "application/json",
+        ],
+        string("{\"longUnits\": \"", longUnits,"\",\n\"shortUnits\": \"", shortUnits,"\"}"),
+    )
+
+    return true
 end
 
 end

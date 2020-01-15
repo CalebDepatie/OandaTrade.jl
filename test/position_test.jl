@@ -10,3 +10,7 @@ bar = Julianda.Position.listOpenPositions(foo)
 
 bar = Julianda.Position.getPosition(foo, "GBP_USD")
 @test bar.instrument == "GBP_USD"
+
+@test Julianda.Position.closePosition(foo, "GBP_USD", 50)
+
+@test Julianda.Position.closePositionFull(foo, "GBP_USD")
