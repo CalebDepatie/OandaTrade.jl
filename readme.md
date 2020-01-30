@@ -6,6 +6,8 @@
 
 Julianda is in the very early stages of design, but I plan it to be a Julia wrapper for the Oanda FX trading API. I will eventually add functions accessing every endpoint.
 
+It is nearing what I would consider usable, please view the Docs to get started!
+
 ## Endpoints to Do:
 
 * Account
@@ -16,9 +18,9 @@ Julianda is in the very early stages of design, but I plan it to be a Julia wrap
   * ~~/accounts/{accountID}/configuration~~
   * /accounts/{accountID}/changes
 * Instrument
-  * /instruments/{instrument}/candles
-  * /instruments/{instrument}/orderBook
-  * /instruments/{instrument}/positionBook
+  * ~~/instruments/{instrument}/candles~~
+  * ~~/instruments/{instrument}/orderBook~~
+  * ~~/instruments/{instrument}/positionBook~~
 * Order
   * ~~/accounts/{accountID}/orders * POST~~
   * /accounts/{accountID}/orders * GET
@@ -35,15 +37,15 @@ Julianda is in the very early stages of design, but I plan it to be a Julia wrap
   * /accounts/{accountID}/trades/{tradeSpecifier}/clientExtensions
   * /accounts/{accountID}/trades/{tradeSpecifier}/orders
 * Position
-  * /accounts/{accountID}/positions
-  * /accounts/{accountID}/openPositions
-  * /accounts/{accountID}/positions/{instrument}
-  * /accounts/{accountID}/positions/{instrument}/close
+  * ~~/accounts/{accountID}/positions~~
+  * ~~/accounts/{accountID}/openPositions~~
+  * ~~/accounts/{accountID}/positions/{instrument}~~
+  * ~~/accounts/{accountID}/positions/{instrument}/close~~
 * Transaction
-  * /accounts/{accountID}/transactions
-  * /accounts/{accountID}/transactions/{transactionID}
-  * /accounts/{accountID}/transactions/idrange
-  * /accounts/{accountID}/transactions/sinceid
+  * ~~/accounts/{accountID}/transactions~~
+  * ~~/accounts/{accountID}/transactions/{transactionID}~~
+  * ~~/accounts/{accountID}/transactions/idrange~~
+  * ~~/accounts/{accountID}/transactions/sinceid~~
   * /accounts/{accountID}/transactions/stream
 * Pricing
   * /accounts/{accountID}/candles/latest

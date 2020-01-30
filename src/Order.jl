@@ -1,5 +1,5 @@
 module Order
-using JSON3, HTTP
+using JSON3, HTTP, Dates
 
 "Stop loss settings for an order"
 mutable struct stopLossOnFill
@@ -45,6 +45,8 @@ end
 
 "Coerce a given Order into its proper types (Used internally)"
 function coerceOrder(order::order)
+    RFC = Dates.DateFormat("yyyy-mm-ddTHH:MM:SS.sssssssssZ")
+    order.createTime = DateTime(first(order.createTime, 23), RFC)
     order.price = parse(Float32, order.price)
     order.units = parse(Int32, order.units)
     order.stopLossOnFill.price = parse(Float32, order.stopLossOnFill.price)
@@ -58,15 +60,41 @@ JSON3.StructType(::Type{marketOrderRequest}) = JSON3.Struct()
 JSON3.StructType(::Type{orderRequest}) = JSON3.Struct()
 
 "Places an order"
-function placeOrder(config, instrument, units, TIF="FOK", priceBound="1.23", positionFill="DEFAULT")
-    data = marketOrderRequest("MARKET", instrument, units, TIF, priceBound, positionFill)
+function placeOrder(
+    config,
+    instrument,
+    units,
+    priceBound = "1.5",
+    TIF = "FOK",
+    positionFill = "DEFAULT",
+)
+    data = marketOrderRequest(
+        "MARKET",
+        instrument,
+        units,
+        TIF,
+        priceBound,
+        positionFill,
+    )
     data = orderRequest(data)
-    r = HTTP.request("POST", string("https://", config.hostname, "/v3/accounts/", config.account, "/orders"),
-    ["Authorization" => string("Bearer ", config.token),
-    "Accept-Datetime-Format" => config.datetime, "Content-Type" => "application/json"], JSON3.write(data))
-    if r.status != 200
-        println(r.status)
-    end
+    r = HTTP.request(
+        "POST",
+        string(
+            "https://",
+            config.hostname,
+            "/v3/accounts/",
+            config.account,
+            "/orders",
+        ),
+        [
+         "Authorization" => string("Bearer ", config.token),
+         "Accept-Datetime-Format" => config.datetime,
+         "Content-Type" => "application/json",
+        ],
+        JSON3.write(data),
+    )
+
+    return true
 end
 
 end

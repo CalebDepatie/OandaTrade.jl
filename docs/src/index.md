@@ -16,7 +16,6 @@ You will need to create a config file with your Oanda account information in the
 hostname: <<api-fxpractice.oanda.com or api-fxtrade.oanda.com>>
 streaming_hostname: <<stream-fxpractice.oanda.com or stream-fxtrade.oanda.com>>
 token: <<your token>>
-datetime: <<Your datetime format of choice IE UNIX>>
 username: <<Account username>>
 account: <<Account to initially interact with>>
 ```

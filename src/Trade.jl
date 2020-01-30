@@ -1,5 +1,5 @@
 module Trade
-using JSON3
+using JSON3, Dates
 
 "Detailed Trade struct from Oanda"
 mutable struct trade
@@ -21,7 +21,8 @@ end
 function coerceTrade(trade::trade)
     trade.currentUnits = parse(Int32, trade.currentUnits)
     trade.financing = parse(Float32, trade.financing)
-    # ID is left as a string, makes more sense to me for usage
+    RFC = Dates.DateFormat("yyyy-mm-ddTHH:MM:SS.sssssssssZ")
+    trade.openTime = DateTime(first(trade.openTime, 23), RFC)
     trade.initialUnits = parse(Int32, trade.initialUnits)
     trade.price = parse(Float32, trade.price)
     trade.realizedPL = parse(Float32, trade.realizedPL)

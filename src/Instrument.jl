@@ -29,7 +29,7 @@ mutable struct candles
     granularity
     candles::Vector{candlestick}
 
-    candles()=new()
+    candles() = new()
 end
 
 # Declaring JSON3 struct types
@@ -38,26 +38,26 @@ JSON3.StructType(::Type{candlestick}) = JSON3.Mutable()
 JSON3.StructType(::Type{candles}) = JSON3.Mutable()
 
 # Conversions to proper Julia types
-function coerceCandleStick(config,candle::candlestick)
+function coerceCandleStick(config, candle::candlestick)
 
     RFC = Dates.DateFormat("yyyy-mm-ddTHH:MM:SS.sssssssssZ")
 
-    candle.time = (config.datetime == "RFC3339" ? DateTime(candle.time, RFC) : unix2datetime(parse(Float32,candle.time)))
-    isdefined(candle,:bid) && (candle.bid = coerceCandleStickData(candle.bid))
-    isdefined(candle,:ask) && (candle.ask = coerceCandleStickData(candle.ask))
-    isdefined(candle,:mid) && (candle.mid = coerceCandleStickData(candle.mid))
+    candle.time = DateTime(candle.time, RFC)
+    isdefined(candle, :bid) && (candle.bid = coerceCandleStickData(candle.bid))
+    isdefined(candle, :ask) && (candle.ask = coerceCandleStickData(candle.ask))
+    isdefined(candle, :mid) && (candle.mid = coerceCandleStickData(candle.mid))
 
     return candle
 end
 
 function coerceCandleStickData(candleData::candlestickdata)
 
-   candleData.o = parse(Float32,candleData.o)
-   candleData.h = parse(Float32,candleData.h)
-   candleData.l = parse(Float32,candleData.l)
-   candleData.c = parse(Float32,candleData.c)
+    candleData.o = parse(Float32, candleData.o)
+    candleData.h = parse(Float32, candleData.h)
+    candleData.l = parse(Float32, candleData.l)
+    candleData.c = parse(Float32, candleData.c)
 
-   return candleData
+    return candleData
 end
 
 """
@@ -97,113 +97,217 @@ getCandles has five methods depending on how the candles to retrieve are selecte
     getCandles(userdata,"EUR_USD",DateTime(2019,1,31),"M","D")
 
 """
-function getCandles(config, instrument::String, lastn::Int, price::String="M", granularity::String="M5";kwargs...)
+function getCandles(
+    config,
+    instrument::String,
+    lastn::Int,
+    price::String = "M",
+    granularity::String = "M5";
+    kwargs...,
+)
     #Is it possible to handle combinations of count,fromDate, toDate with fewer methods?
-    r = HTTP.get(string("https://", config.hostname, "/v3/instruments/", instrument, "/candles"),
-        ["Authorization" => string("Bearer ", config.token), "Accept-Datetime-Format" => config.datetime];
-        query = push!(Dict(),"price" => price, "granularity" => granularity, "count" => lastn, kwargs...))
-    
-    if r.status != 200
-        println(r.status)
-    end
+    r = HTTP.get(
+        string(
+            "https://",
+            config.hostname,
+            "/v3/instruments/",
+            instrument,
+            "/candles",
+        ),
+        [
+         "Authorization" => string("Bearer ", config.token),
+         "Accept-Datetime-Format" => config.datetime,
+        ];
+        query = push!(
+            Dict(),
+            "price" => price,
+            "granularity" => granularity,
+            "count" => lastn,
+            kwargs...,
+        ),
+    )
 
-    temp = JSON3.read(r.body,candles)
+    temp = JSON3.read(r.body, candles)
 
     #type coersions
     for c in temp.candles
-       c = coerceCandleStick(config,c)
+        c = coerceCandleStick(config, c)
     end
 
     return temp
 
 end
 
-function getCandles(config,instrument::String, from::DateTime, to::DateTime, price::String = "M", granularity::String = "M5";kwargs...)
+function getCandles(
+    config,
+    instrument::String,
+    from::DateTime,
+    to::DateTime,
+    price::String = "M",
+    granularity::String = "M5";
+    kwargs...,
+)
 
     from = Dates.format(from, "yyyy-mm-ddTHH:MM:SS.000000000Z")
     to = Dates.format(to, "yyyy-mm-ddTHH:MM:SS.000000000Z")
 
-    r = HTTP.get(string("https://", config.hostname, "/v3/instruments/", instrument, "/candles"),
-        ["Authorization" => string("Bearer ", config.token), "Accept-Datetime-Format" => config.datetime];
-        query = push!(Dict(),"price" => price, "granularity" => granularity,"fromDate" => from, "toDate" => to,kwargs...))
-        
-    if r.status != 200
-        println(r.status)
-    end
+    r = HTTP.get(
+        string(
+            "https://",
+            config.hostname,
+            "/v3/instruments/",
+            instrument,
+            "/candles",
+        ),
+        [
+         "Authorization" => string("Bearer ", config.token),
+         "Accept-Datetime-Format" => config.datetime,
+        ];
+        query = push!(
+            Dict(),
+            "price" => price,
+            "granularity" => granularity,
+            "fromDate" => from,
+            "toDate" => to,
+            kwargs...,
+        ),
+    )
 
-    temp = JSON3.read(r.body,candles)
+    temp = JSON3.read(r.body, candles)
 
     #type coersions
     for c in temp.candles
-       c = coerceCandleStick(config,c)
+        c = coerceCandleStick(config, c)
     end
 
     return temp
 end
 
-function getCandles(config, instrument::String, from::DateTime, n::Int, price::String = "M", granularity::String = "M5";kwargs...)
+function getCandles(
+    config,
+    instrument::String,
+    from::DateTime,
+    n::Int,
+    price::String = "M",
+    granularity::String = "M5";
+    kwargs...,
+)
 
     from = Dates.format(from, "yyyy-mm-ddTHH:MM:SS.000000000Z")
 
-    r = HTTP.get(string("https://", config.hostname, "/v3/instruments/", instrument, "/candles"),
-        ["Authorization" => string("Bearer ", config.token), "Accept-Datetime-Format" => config.datetime];
-        query = push!(Dict(),"price" => price, "granularity" => granularity,"count" => n, "fromDate" => from,kwargs...))
-        
-    if r.status != 200
-        println(r.status)
-    end
+    r = HTTP.get(
+        string(
+            "https://",
+            config.hostname,
+            "/v3/instruments/",
+            instrument,
+            "/candles",
+        ),
+        [
+         "Authorization" => string("Bearer ", config.token),
+         "Accept-Datetime-Format" => config.datetime,
+        ];
+        query = push!(
+            Dict(),
+            "price" => price,
+            "granularity" => granularity,
+            "count" => n,
+            "fromDate" => from,
+            kwargs...,
+        ),
+    )
 
-    temp = JSON3.read(r.body,candles)
+    temp = JSON3.read(r.body, candles)
 
     #type coersions
     for c in temp.candles
-       c = coerceCandleStick(config,c)
+        c = coerceCandleStick(config, c)
     end
 
     return temp
 end
 
-function getCandles(config, instrument::String, n::Int,to::DateTime, price::String = "M", granularity::String = "M5";kwargs...)
+function getCandles(
+    config,
+    instrument::String,
+    n::Int,
+    to::DateTime,
+    price::String = "M",
+    granularity::String = "M5";
+    kwargs...,
+)
 
-
-        
     to = Dates.format(to, "yyyy-mm-ddTHH:MM:SS.000000000Z")
 
-    r = HTTP.get(string("https://", config.hostname, "/v3/instruments/", instrument, "/candles"),
-        ["Authorization" => string("Bearer ", config.token), "Accept-Datetime-Format" => config.datetime];
-        query = push!(Dict(),"price" => price, "granularity" => granularity,"count" => n, "toDate" => to, kwargs...))
-        
-    if r.status != 200
-        println(r.status)
-    end
+    r = HTTP.get(
+        string(
+            "https://",
+            config.hostname,
+            "/v3/instruments/",
+            instrument,
+            "/candles",
+        ),
+        [
+         "Authorization" => string("Bearer ", config.token),
+         "Accept-Datetime-Format" => config.datetime,
+        ];
+        query = push!(
+            Dict(),
+            "price" => price,
+            "granularity" => granularity,
+            "count" => n,
+            "toDate" => to,
+            kwargs...,
+        ),
+    )
 
-    temp = JSON3.read(r.body,candles)
+    temp = JSON3.read(r.body, candles)
 
     #type coersions
     for c in temp.candles
-       c = coerceCandleStick(config,c)
+        c = coerceCandleStick(config, c)
     end
 
     return temp
 end
 
-function getCandles(config, instrument::String, from::DateTime, price::String = "M", granularity::String = "M5";kwargs...)
+function getCandles(
+    config,
+    instrument::String,
+    from::DateTime,
+    price::String = "M",
+    granularity::String = "M5";
+    kwargs...,
+)
 
     from = Dates.format(from, "yyyy-mm-ddTHH:MM:SS.000000000Z")
 
-    r = HTTP.get(string("https://", config.hostname, "/v3/instruments/", instrument, "/candles"),
-        ["Authorization" => string("Bearer ", config.token), "Accept-Datetime-Format" => config.datetime];
-        query = push!(Dict(),"price" => price, "granularity" => granularity,"fromDate" => from, kwargs...))
-        
-    if r.status != 200
-        println(r.status)
-    end
+    r = HTTP.get(
+        string(
+            "https://",
+            config.hostname,
+            "/v3/instruments/",
+            instrument,
+            "/candles",
+        ),
+        [
+         "Authorization" => string("Bearer ", config.token),
+         "Accept-Datetime-Format" => config.datetime,
+        ];
+        query = push!(
+            Dict(),
+            "price" => price,
+            "granularity" => granularity,
+            "fromDate" => from,
+            kwargs...,
+        ),
+    )
 
-    temp = JSON3.read(r.body,candles)
+    temp = JSON3.read(r.body, candles)
 
     #type coersions
     for c in temp.candles
-       c = coerceCandleStick(config,c)
+        c = coerceCandleStick(config, c)
     end
 
     return temp
@@ -216,7 +320,7 @@ mutable struct orderBookBucket
     longCountPercent
     shortCountPercent
 
-    orderBookBucket()=new()
+    orderBookBucket() = new()
 end
 
 mutable struct orderBook
@@ -225,8 +329,8 @@ mutable struct orderBook
     price
     bucketWidth
     buckets::Vector{orderBookBucket}
-   
-    orderBook()=new()
+
+    orderBook() = new()
 end
 
 mutable struct orderBookTopLayer
@@ -245,8 +349,8 @@ function coerceOrderBook(ob::orderBook)
     RFC = Dates.DateFormat("yyyy-mm-ddTHH:MM:SSZ")
 
     ob.time = DateTime(ob.time, RFC)
-    ob.price = parse(Float32,ob.price)
-    ob.bucketWidth =parse(Float32,ob.bucketWidth)
+    ob.price = parse(Float32, ob.price)
+    ob.bucketWidth = parse(Float32, ob.bucketWidth)
     for bucket in ob.buckets
         bucket = coerceOrderBookBucket(bucket)
     end
@@ -255,9 +359,9 @@ function coerceOrderBook(ob::orderBook)
 end
 
 function coerceOrderBookBucket(bucket::orderBookBucket)
-    bucket.price=parse(Float32,bucket.price)
-    bucket.longCountPercent=parse(Float32,bucket.longCountPercent)
-    bucket.shortCountPercent=parse(Float32,bucket.shortCountPercent)
+    bucket.price = parse(Float32, bucket.price)
+    bucket.longCountPercent = parse(Float32, bucket.longCountPercent)
+    bucket.shortCountPercent = parse(Float32, bucket.shortCountPercent)
 
     return bucket
 end
@@ -269,23 +373,30 @@ end
     getOrderBook(userdata,"EUR_CHF",DateTime(2017,1,31,4,00))
 
 """
-function getOrderBook(config,instrument::String, time::DateTime=now())
+function getOrderBook(config, instrument::String, time::DateTime = now())
 
     time = Dates.format(time, "yyyy-mm-ddTHH:MM:SS.000000000Z")
 
-    r = HTTP.get(string("https://", config.hostname, "/v3/instruments/", instrument, "/orderBook"),
-        ["Authorization" => string("Bearer ", config.token), "Accept-Datetime-Format" => config.datetime];
-        query = Dict("time" => time))
-
-    if r.status != 200
-        println(r.status)
-    end    
+    r = HTTP.get(
+        string(
+            "https://",
+            config.hostname,
+            "/v3/instruments/",
+            instrument,
+            "/orderBook",
+        ),
+        [
+         "Authorization" => string("Bearer ", config.token),
+         "Accept-Datetime-Format" => config.datetime,
+        ];
+        query = Dict("time" => time),
+    )
 
     unzipr = GzipDecompressorStream(IOBuffer(String(r.body))) #Response is compressed
-  
-    temp = JSON3.read(unzipr,orderBookTopLayer)
 
-    temp.orderBook = coerceorderBook(temp.orderBook)
+    temp = JSON3.read(unzipr, orderBookTopLayer)
+
+    temp.orderBook = coerceOrderBook(temp.orderBook)
 
     return temp.orderBook
 end
@@ -297,7 +408,7 @@ mutable struct positionBookBucket
     longCountPercent
     shortCountPercent
 
-    positionBookBucket()=new()
+    positionBookBucket() = new()
 end
 
 mutable struct positionBook
@@ -306,8 +417,8 @@ mutable struct positionBook
     price
     bucketWidth
     buckets::Vector{positionBookBucket}
-   
-    positionBook()=new()
+
+    positionBook() = new()
 end
 
 mutable struct positionBookTopLayer
@@ -326,8 +437,8 @@ function coercePositionBook(ob::positionBook)
     RFC = Dates.DateFormat("yyyy-mm-ddTHH:MM:SSZ")
 
     ob.time = DateTime(ob.time, RFC)
-    ob.price = parse(Float32,ob.price)
-    ob.bucketWidth =parse(Float32,ob.bucketWidth)
+    ob.price = parse(Float32, ob.price)
+    ob.bucketWidth = parse(Float32, ob.bucketWidth)
     for bucket in ob.buckets
         bucket = coercePositionBookBucket(bucket)
     end
@@ -336,9 +447,9 @@ function coercePositionBook(ob::positionBook)
 end
 
 function coercePositionBookBucket(bucket::positionBookBucket)
-    bucket.price=parse(Float32,bucket.price)
-    bucket.longCountPercent=parse(Float32,bucket.longCountPercent)
-    bucket.shortCountPercent=parse(Float32,bucket.shortCountPercent)
+    bucket.price = parse(Float32, bucket.price)
+    bucket.longCountPercent = parse(Float32, bucket.longCountPercent)
+    bucket.shortCountPercent = parse(Float32, bucket.shortCountPercent)
 
     return bucket
 end
@@ -350,21 +461,28 @@ end
     getPositionBook(userdata,"EUR_CHF",DateTime(2017,1,31,4,00))
 
 """
-function getPositionBook(config,instrument::String, time::DateTime=now())
+function getPositionBook(config, instrument::String, time::DateTime = now())
 
     time = Dates.format(time, "yyyy-mm-ddTHH:MM:SS.000000000Z")
 
-    r = HTTP.get(string("https://", config.hostname, "/v3/instruments/", instrument, "/positionBook"),
-        ["Authorization" => string("Bearer ", config.token), "Accept-Datetime-Format" => config.datetime];
-        query = Dict("time" => time))
-
-    if r.status != 200
-        println(r.status)
-    end    
+    r = HTTP.get(
+        string(
+            "https://",
+            config.hostname,
+            "/v3/instruments/",
+            instrument,
+            "/positionBook",
+        ),
+        [
+         "Authorization" => string("Bearer ", config.token),
+         "Accept-Datetime-Format" => config.datetime,
+        ];
+        query = Dict("time" => time),
+    )
 
     unzipr = GzipDecompressorStream(IOBuffer(String(r.body))) #Response is compressed
-  
-    temp = JSON3.read(unzipr,positionBookTopLayer)
+
+    temp = JSON3.read(unzipr, positionBookTopLayer)
 
     temp.positionBook = coercePositionBook(temp.positionBook)
 

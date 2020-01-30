@@ -23,7 +23,14 @@ Loads a YAML config
 """
 function loadConfig(path::String)
     data = YAML.load(open(path))
-    temp = config(data["hostname"], data["streaming_hostname"], data["token"], data["username"], data["account"], data["datetime"])
+    temp = config(
+        data["hostname"],
+        data["streaming_hostname"],
+        data["token"],
+        data["username"],
+        data["account"],
+        "RFC3339",
+    )
     return temp
 end
 
@@ -38,13 +45,18 @@ Saves a config as a YAML file
 """
 function saveConfig(path::String, config::config)
     #Convert config file to string for saving
-    conf_string = string("hostname: ", config.hostname,
-                        "\nstreaming_hostname: ", config.streamingHostname,
-                        "\ntoken: ", config.token,
-                        "\ndatetime: ", config.datetime,
-                        "\nusername: ", config.username,
-                        "\naccount: ", config.account
-                        )
+    conf_string = string(
+        "hostname: ",
+        config.hostname,
+        "\nstreaming_hostname: ",
+        config.streamingHostname,
+        "\ntoken: ",
+        config.token,
+        "\nusername: ",
+        config.username,
+        "\naccount: ",
+        config.account,
+    )
     #YAML.write_file seems to be unreleased, will have to use a custom function
     open(path, "w") do io
         write(io, conf_string)
@@ -63,8 +75,14 @@ Returns the config with the new account number
 - acc: The string of the account identifier
 """
 function changeAccount(conf::config, acc::String)
-    temp = config(conf.hostname, conf.streamingHostname, conf.token,
-                conf.username, acc, conf.datetime)
+    temp = config(
+        conf.hostname,
+        conf.streamingHostname,
+        conf.token,
+        conf.username,
+        acc,
+        conf.datetime,
+    )
     return temp
 end
 
