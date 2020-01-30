@@ -243,6 +243,4 @@ end
 # //accounts/{accountID}/trades/{tradeSpecifier}/orders Endpoint
 # ------------------------------------------------------------------------------------
 
-
-
 end #Module
