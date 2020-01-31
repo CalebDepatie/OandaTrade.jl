@@ -150,14 +150,22 @@ end
 JSON3.StructType(::Type{singleTrade}) = JSON3.Mutable()
 
 """
-   getTrade(config::config,id::String)
+   getTrade(config::config, tradeID::String)
 
-    TODO
+   Return a specific trade 
+
+    # Arguments
+    - 'config::config': a valid struct with user configuracion data
+    - 'id::string': a valid trade ID
+    
+    # Examples
+    
+        getTrades(userconfig,"66")
 
 """
-function getTrade(config::config,id::String)
+function getTrade(config::config, tradeID::String)
    
-    r = HTTP.get(string("https://", config.hostname, "/v3/accounts/", config.account,"/trades/",id),
+    r = HTTP.get(string("https://", config.hostname, "/v3/accounts/", config.account,"/trades/",tradeID),
         ["Authorization" => string("Bearer ", config.token)])
 
     temp = JSON3.read(r.body,singleTrade)
@@ -201,8 +209,17 @@ JSON3.StructType(::Type{closeUnitsResp}) = JSON3.Mutable()
 """
     closeTrade(config::config, tradeID::String, units::Union{Number,String}="ALL")
     
-    TODO
+    Return an array of trade struct
 
+    # Arguments
+        - 'config::config': a valid struct with user configuracion data
+        - 'id::string': a valid trade ID
+        - units::Union{Number,String}: how much of the Trade to close in units or "ALL"
+        
+    #Examples
+        
+        closeTrade(userconfig,"66","ALL")
+        
 """
 function closeTrade(config::config, tradeID::String, units::Union{Number,String}="ALL")
     
@@ -220,12 +237,20 @@ end
 """
     clientExtensions(config::config, tradeID::String; clientID::String="", tag::String="", comment::String="")
     
-    TODO
+    Lets add user information to a specific Trade
+
+    # Arguments
+        - 'config::config': a valid struct with user configuracion data
+        - 'tradeID::string': a valid trade ID
+        - clientID, tag and comment: strings with the user information
+        
+    #Examples
+        
+        closeTrade(userconfig,"66", clientID="007",tag="foo")
+        
 
 """
-
 #clientExtension struct
-
 struct extensions
     id::String
     tag::String
@@ -265,5 +290,12 @@ end
 # ------------------------------------------------------------------------------------
 # //accounts/{accountID}/trades/{tradeSpecifier}/orders Endpoint
 # ------------------------------------------------------------------------------------
+
+
+
+
+
+
+
 
 end #Module
