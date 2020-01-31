@@ -172,15 +172,31 @@ end
 #CloseTrade struct and inner constructors
 struct closeUnits
     units::String
+
+    closeUnits(x::String) = new(x)
+
     function closeUnits(x:: Number) 
         str = string(x)
         new(str) 
     end
-    closeUnits(x::String) = new(x)
+
+end
+
+mutable struct closeUnitsResp
+
+    orderCreateTransaction::Dict{String,Any}
+    orderFillTransaction::Dict{String,Any}
+    orderCancelTransaction::Dict{String,Any}
+    relatedTransactionIDs::Vector{String}
+    lastTransactionID
+
+    closeUnitsResp() = new()
+
 end
 
 # Declaring JSON3 struct types
 JSON3.StructType(::Type{closeUnits}) = JSON3.Struct()
+JSON3.StructType(::Type{closeUnitsResp}) = JSON3.Mutable()
 
 """
     closeTrade(config::config, tradeID::String, units::Union{Number,String}="ALL")
@@ -193,11 +209,9 @@ function closeTrade(config::config, tradeID::String, units::Union{Number,String}
     r = HTTP.put(string("https://", config.hostname, "/v3/accounts/", config.account,"/trades/",tradeID,"/close"),
         ["Authorization" => string("Bearer ", config.token),"Content-Type" => "application/json"], JSON3.write(closeUnits(units)))
   
-    return JSON3.read(r.body) #TODO. Put response in a structure
+    return JSON3.read(r.body,closeUnitsResp) #TODO. Put response in a structure
 
 end
-
-
 
 # ------------------------------------------------------------------------------------
 # //accounts/{accountID}/trades/{tradeSpecifier}/clientExtensions Endpoint
@@ -223,10 +237,19 @@ struct clientExtensions
     clientExtensions::extensions
 end
 
+mutable struct clientExtensionsResp
+    tradeClientExtensionsModifyTransaction::Dict{String,Any}
+    relatedTransactionIDs::Vector{String}
+    lastTransactionID
+
+    clientExtensionsResp() = new()
+
+end
 
 # Declaring JSON3 struct types
 JSON3.StructType(::Type{clientExtensions}) = JSON3.Struct()
 JSON3.StructType(::Type{extensions}) = JSON3.Struct()
+JSON3.StructType(::Type{clientExtensionsResp}) = JSON3.Mutable()
 
 function clientExtensions(config::config, tradeID::String; clientID::String="", tag::String="", comment::String="")
 
@@ -235,7 +258,7 @@ function clientExtensions(config::config, tradeID::String; clientID::String="", 
     r = HTTP.put(string("https://", config.hostname, "/v3/accounts/", config.account,"/trades/",tradeID,"/clientExtensions"),
         ["Authorization" => string("Bearer ", config.token),"Content-Type" => "application/json"], JSON3.write(data))
   
-    return JSON3.read(r.body) #TODO. Put response in a structure
+    return JSON3.read(r.body, clientExtensionsResp) #TODO. Put response in a structure
 
 end
 
