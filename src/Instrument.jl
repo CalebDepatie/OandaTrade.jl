@@ -70,7 +70,7 @@ end
 Get candle information of a given instrument and returns a Candle struct
 Information includes: time, granularity, open, high, low, close, volume and a complete indicator
 
-getCandles has five methods depending on how the candles to retrieve are selected
+getCandles has five ways to select the candles to retrieve
 - lastn: last "n" candles
 - from and to: candles in a time interval specified by two dates
 - from and "n", to and "n": n candles from or to the specified date
