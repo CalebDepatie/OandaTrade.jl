@@ -1,4 +1,5 @@
 module Pricing
+
 using HTTP, JSON3, Dates
 
 # ------------------------------------------------------------------------------------
@@ -75,7 +76,7 @@ Get the most recent price update of an instrument
 function getPrice(config::config, instruments::Vector{String})
 
     r = HTTP.get(string("https://", config.hostname, "/v3/accounts/",config.account,"/pricing?instruments=", join(instruments,",")),
-                ["Authorization" => string("Bearer ", config.token), "Accept-Datetime-Format" => config.datetime,],)
+                ["Authorization" => string("Bearer ", config.token)])
 
     data = JSON3.read(r.body, priceTopLayer)
 
@@ -83,8 +84,7 @@ function getPrice(config::config, instruments::Vector{String})
         coercePrice(priceData)
     end
 
-    return data.prices #Does not return 'since' datetime
-
+    return data.prices #Does not return 'since' datetime=#
 end
 # ------------------------------------------------------------------------------------
 # /accounts/{accountID}/pricing/stream Endpoint
@@ -112,15 +112,129 @@ function streamPrice(f::Function, config::config,instruments::Vector{String})
         ["Authorization" => string("Bearer ", config.token)]) do io
             for line in eachline(io)
                 p = JSON3.read(line, price)
-                p.type != "HEARTBEAT" && f(p) #Cleans HEARTBEAT ticks so that only prices are sent to f
+                p.type != "HEARTBEAT" && f(p) #Cleans HEARTBEAT ticks -> only prices are sent to f
             end
         end
 end
 
-
 # ------------------------------------------------------------------------------------
 # /accounts/{accountID}/candles/latest Endpoint
 # ------------------------------------------------------------------------------------
+
+# All structs defined here except latestCandles are common with those in Instrument.jl
+mutable struct candlestickdata
+    o   #open
+    h   #high
+    l   #low
+    c   #close
+
+    candlestickdata() = new()
+end
+
+mutable struct candlestick
+    complete::Bool
+    volume
+    time
+    bid::candlestickdata
+    ask::candlestickdata
+    mid::candlestickdata
+
+    candlestick() = new()
+end
+
+mutable struct candles
+    instrument::String
+    granularity::String
+    candles::Vector{candlestick}
+
+    candles() = new()
+end
+
+# Declaring JSON3 struct types
+JSON3.StructType(::Type{candlestickdata}) = JSON3.Mutable()
+JSON3.StructType(::Type{candlestick}) = JSON3.Mutable()
+JSON3.StructType(::Type{candles}) = JSON3.Mutable()
+
+# Conversions to proper Julia types
+function coerceCandleStick(config, candle::candlestick)
+
+    RFC = Dates.DateFormat("yyyy-mm-ddTHH:MM:SS.sssssssssZ")
+
+    candle.time = DateTime(candle.time, RFC)
+    isdefined(candle, :bid) && (candle.bid = coerceCandleStickData(candle.bid))
+    isdefined(candle, :ask) && (candle.ask = coerceCandleStickData(candle.ask))
+    isdefined(candle, :mid) && (candle.mid = coerceCandleStickData(candle.mid))
+
+    return candle
+end
+
+function coerceCandleStickData(candleData::candlestickdata)
+
+    candleData.o = parse(Float32, candleData.o)
+    candleData.h = parse(Float32, candleData.h)
+    candleData.l = parse(Float32, candleData.l)
+    candleData.c = parse(Float32, candleData.c)
+
+    return candleData
+end
+
+struct latestCandles
+    latestCandles::Vector{candles}
+end
+
+# Declaring JSON3 struct types
+JSON3.StructType(::Type{latestCandles}) = JSON3.Struct()
+
+"""
+
+    function getLatestCandles(config, candleSpecs; kwargs...,)
+
+
+Information includes: time, granularity, open, high, low, close, volume and a complete indicator
+
+# Arguments
+- 'config::config': a valid struct with user configuration data
+- 'candleSpecs::Vector': A vector of tuples indicating the specifications for candle to retrieve. 
+    The tuple must have the instrument, granularity and price component in this order
+
+Valid granularities: ["S5","S10","S15","S30","M1","M2","M4","M5","M10","M15","M30","H1","H2","H3","H4","H6","H8","H12","D","W","M"]
+Valid prices: "A" for ask, "B" for bid, "M" for medium or a combination of them
+
+# Keyword Arguments
+- 'units::Number'
+- 'smooth::Bool'
+- 'dailyaligment::Int'
+- 'alignmentTimezone::String'
+- 'weeklyAlignment::String'
+
+# Example
+
+    getLatestCandles(userconfig, [("EUR_USD","M1","AB"),(("EUR_CHF","M5","M"))])
+    getLatestCandles(sim02, [("EUR_USD","M1","AB"),(("EUR_CHF","M5","M"))])
+
+"""
+
+function getLatestCandles(config::config, candleSpecs::Vector, kwargs...,)
+    
+    cspec = join([join(i,":") for i in candleSpecs ],",")
+
+    r = HTTP.get(string("https://",config.hostname,"/v3/accounts/",config.account,"/candles/latest"),
+        ["Authorization" => string("Bearer ", config.token)];
+        query = push!(Dict(),"candleSpecifications"=> cspec, kwargs...,),)
+
+    temp = JSON3.read(r.body, latestCandles)
+
+    #type coersions
+    for latestc in temp.latestCandles
+        for c in latestc.candles
+        c = coerceCandleStick(config, c)
+        end
+    end
+
+    return temp
+
+end
+
 
 # ------------------------------------------------------------------------------------
 # /accounts/{accountID}/instrument/{instrument}/candle Endpoint
