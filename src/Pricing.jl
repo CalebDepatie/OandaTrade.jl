@@ -87,6 +87,21 @@ function getPrice(config::config, instruments::Vector{String})
     return data.prices #Does not return 'since' datetime=#
 end
 
+
+"Exception thrown when the market is closed on the weekend"
+struct ClosedMarketException <: Exception end
+
+"Get the most recent price update of an instrument"
+function checkMarket()
+    dt = Dates.now()
+    if Dates.dayofweek(dt) >= 5
+        if Dates.dayofweek(dt) == 5 & Dates.hour(dt) < 4
+        elseif Dates.dayofweek(dt) == 7 & Dates.hour(dt) >= 5
+        else
+            throw(ClosedMarketException())
+        end
+    end
+end
 # ------------------------------------------------------------------------------------
 # /accounts/{accountID}/pricing/stream Endpoint
 # ------------------------------------------------------------------------------------
