@@ -86,6 +86,7 @@ function getPrice(config::config, instruments::Vector{String})
 
     return data.prices #Does not return 'since' datetime=#
 end
+
 # ------------------------------------------------------------------------------------
 # /accounts/{accountID}/pricing/stream Endpoint
 # ------------------------------------------------------------------------------------
@@ -239,6 +240,13 @@ end
 # ------------------------------------------------------------------------------------
 # /accounts/{accountID}/instrument/{instrument}/candle Endpoint
 # ------------------------------------------------------------------------------------
+
+"""
+This endopoint is alsmost identical to /instruments/{instrument}/candles -> Not a priority
+
+Only difference is the 'units' keyword argument
+
+"""
 
 
 end #module
