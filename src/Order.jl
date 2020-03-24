@@ -86,7 +86,6 @@ end
 
 # Declaring JSON3 struct types
 
-
 JSON3.StructType(::Type{takeProfit}) = JSON3.Mutable()
 JSON3.omitempties(::Type{takeProfit})=(:price,:timeInForce,:gtdTime)
 
@@ -98,7 +97,7 @@ JSON3.omitempties(::Type{trailingStopLoss})=(:price,:timeInForce,:gtdTime)
 
 JSON3.StructType(::Type{orderRequest}) = JSON3.Mutable()
 JSON3.omitempties(::Type{orderRequest})=(:price, :units, :priceBound,:triggerCondition,:gtdTime,
-                                        :takeProfitOnFill,:stopLossOnFill,:trailingStopLossOnFill,
+                                         :takeProfitOnFill,:stopLossOnFill,:trailingStopLossOnFill,
                                          :clientExtensions,:tradeClientExtensions)
 
 JSON3.StructType(::Type{order}) = JSON3.Struct()
@@ -169,7 +168,7 @@ function marketOrder(config::config, instrument::String, units::Real;
 end
 
 
-# funtion for other type of orders -----------------------------------------------------------------------
+# Other type of orders -----------------------------------------------------------------------
 """
  nonmarketOrder(config, type, instrument, units, price;[TIF, gtdTime, positionFill, trigge, priceBound, TP ,SL ,tSL, clientExt ,tradeExt])
 
@@ -182,55 +181,55 @@ function nonMarketOrder(config::config, type::String, instrument::String, units:
     TP::NamedTuple=NamedTuple(),SL::NamedTuple=NamedTuple(),tSL::NamedTuple=NamedTuple(),
     clientExt::NamedTuple=NamedTuple(),tradeExt::NamedTuple=NamedTuple())
 
-o = orderRequest()
+    o = orderRequest()
 
-o.type = type
-o.instrument = instrument
-o.units = units
-o.price = price
-o.timeInForce = TIF
-o.priceBound = priceBound
-!isnothing(gtdTime) && (o.gtdTime = Dates.format(gtdTime,"yyyy-mm-ddTHH:MM:SS.sss000000Z"))
-o.positionFill = positionFill
-o.triggerCondition = trigger
+    o.type = type
+    o.instrument = instrument
+    o.units = units
+    o.price = price
+    o.timeInForce = TIF
+    o.priceBound = priceBound
+    !isnothing(gtdTime) && (o.gtdTime = Dates.format(gtdTime,"yyyy-mm-ddTHH:MM:SS.sss000000Z"))
+    o.positionFill = positionFill
+    o.triggerCondition = trigger
 
-if !isempty(TP)
-TPdetails = takeProfit()
-haskey(TP, :price) && (TPdetails.price = TP.price)
-haskey(TP, :timeInForce) && (TPdetails.timeInForce = TP.timeInForce)
-haskey(TP, :gtdTime) && (TPdetails.price = Dates.format(TP.gtdTime,"yyyy-mm-ddTHH:MM:SS.sss000000Z"))
+    if !isempty(TP)
+        TPdetails = takeProfit()
+        haskey(TP, :price) && (TPdetails.price = TP.price)
+        haskey(TP, :timeInForce) && (TPdetails.timeInForce = TP.timeInForce)
+        haskey(TP, :gtdTime) && (TPdetails.price = Dates.format(TP.gtdTime,"yyyy-mm-ddTHH:MM:SS.sss000000Z"))
 
-o.takeProfitOnFill = TPdetails
-end
+        o.takeProfitOnFill = TPdetails
+    end
 
-if !isempty(SL)
-SLdetails = stopLoss()
-haskey(SL, :price) && (SLdetails.price = SL.price)
-haskey(SL, :distance) && (SLdetails.distance = SL.distance)
-haskey(SL, :timeInForce) && (SLdetails.timeInForce = SL.timeInForce)
-haskey(SL, :gtdTime) && (SLdetails.price = Dates.format(SL.gtdTime,"yyyy-mm-ddTHH:MM:SS.sss000000Z"))
+    if !isempty(SL)
+        SLdetails = stopLoss()
+        haskey(SL, :price) && (SLdetails.price = SL.price)
+        haskey(SL, :distance) && (SLdetails.distance = SL.distance)
+        haskey(SL, :timeInForce) && (SLdetails.timeInForce = SL.timeInForce)
+        haskey(SL, :gtdTime) && (SLdetails.price = Dates.format(SL.gtdTime,"yyyy-mm-ddTHH:MM:SS.sss000000Z"))
 
 o.stopLossOnFill = SLdetails
-end
+    end
 
-if !isempty(tSL)
-tSLdetails = trailingStopLoss()
-haskey(tSL, :distance) && (tSLdetails.distance = tSL.distance)
-haskey(tSL, :timeInForce) && (tSLdetails.timeInForce = tSL.timeInForce)
-haskey(tSL, :gtdTime) && (tSLdetails.price = Dates.format(tSL.gtdTime,"yyyy-mm-ddTHH:MM:SS.sss000000Z"))
+    if !isempty(tSL)
+        tSLdetails = trailingStopLoss()
+        haskey(tSL, :distance) && (tSLdetails.distance = tSL.distance)
+        haskey(tSL, :timeInForce) && (tSLdetails.timeInForce = tSL.timeInForce)
+        haskey(tSL, :gtdTime) && (tSLdetails.price = Dates.format(tSL.gtdTime,"yyyy-mm-ddTHH:MM:SS.sss000000Z"))
 
-o.trailingStopLossOnFill = tSLdetails
-end
+        o.trailingStopLossOnFill = tSLdetails
+    end
 
-# TODO: Client Extensions
+    # TODO: Client Extensions
 
-data = order(o)
+    data = order(o)
 
-r = HTTP.post(string("https://",config.hostname,"/v3/accounts/",config.account,"/orders",),
-["Authorization" => string("Bearer ", config.token), "Content-Type" => "application/json", ],
-JSON3.write(data),)
+    r = HTTP.post(string("https://",config.hostname,"/v3/accounts/",config.account,"/orders",),
+    ["Authorization" => string("Bearer ", config.token), "Content-Type" => "application/json", ],
+    JSON3.write(data),)
 
-return JSON3.read(r.body)
+    return JSON3.read(r.body)
 end
 
 # limit order -----------------------------------------------------------------------
@@ -294,7 +293,6 @@ marketIfTouchedOrder(config::config, instrument::String, units::Real, price::Rea
                   TIF=TIF, gtdTime=gtdTime, positionFill=positionFill, trigger=trigger, priceBound = priceBound,
                   TP=TP, SL=SL ,tSL=tSL, clientExt=clientExt, tradeExt=tradeExt)
                  
-
 
 # ------------------------------------------------------------------------------------
 # /accounts/{accountID}/orders GET Endpoint

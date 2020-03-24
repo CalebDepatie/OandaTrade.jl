@@ -265,3 +265,35 @@ Only difference is the 'units' keyword argument
 
 
 end #module
+
+
+using StructTypes, JSON3
+
+struct FloatAsString
+    x::String
+end
+
+StructTypes.StructType(::Type{FloatAsString}) = StructTypes.StringType()
+
+Base.string(x::FloatAsString) = x.x
+
+StructTypes.construct(::Type{FloatAsString}, x::String) = Parsers.parse(Float64, x)
+
+mutable struct priceBucket
+    price::Union{FloatAsString, Float64} # float as string
+    priceBucket() = new()
+    priceBucket(price) = new(price)
+end
+
+StructTypes.StructType(::Type{priceBucket}) = StructTypes.Mutable()
+
+pb = priceBucket(FloatAsString("3.14"))
+json = JSON3.write(pb)
+pb2 = JSON3.read(json, priceBucket)
+
+#=
+The trick here is our custom FloatAsString type that is declared as StructTypes.StringType(). 
+That means when JSON3.reading our priceBucket, it sees the Union{FloatAsString, Float64} and because FloatAsString is a StringType, 
+it will parse a String first, then call StructTypes.construct(FloatAsString, "3.14"), 
+we then are tricky in our definition of StructTypes.construct and parse it to a Float64 to return.
+=#
