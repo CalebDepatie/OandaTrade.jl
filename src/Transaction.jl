@@ -122,7 +122,7 @@ function coerceTransactionDict(tDict::Dict{String,Any}) #Also used in getTransac
     for (key, value) in tDict
         if eltype(value) == Pair{String,Any}
             tDict[key] = coerceTransactionDict(tDict[key]) #Recursion for Dictionaries inside a transaction field
-        elseif eltype(value) == Any #'asks' & 'bids' in 'fullPrice' has an array of liquidity,prices
+        elseif eltype(value) == Any #'asks' & 'bids' in 'fullPrice' have an array of liquidity, prices
             tDict[key] = collect(coerceTransactionDict.(tDict[key]))
         elseif key in valueFields
             tDict[key] = parse(Float32, value)
