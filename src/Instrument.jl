@@ -70,16 +70,16 @@ end
 Get candle information of a given instrument and returns a Candle struct
 Information includes: time, granularity, open, high, low, close, volume and a complete indicator
 
-getCandles has five methods depending on how the candles to retrieve are selected
+getCandles has five ways to select the candles to retrieve
 - lastn: last "n" candles
 - from and to: candles in a time interval specified by two dates
 - from and "n", to and "n": n candles from or to the specified date
-- from: all candles from the specified date
+- from: all candles from the specified date"A" for ask, "B" for bid, "M" for medium or a combination ot them
 
 # Arguments
-- 'config::config': a valid struct with user configuracion data
+- 'config::config': a valid struct with user configuration data
 - 'instrument::String": a valid instrument (e.g. "EUR_USD")
-- 'price::String': "A" for ask, "B" for bid, "M" for medium or a combination ot them
+- 'price::String': "A" for ask, "B" for bid, "M" for mid or a combination of them
 - 'granularity::String': a valid time interval ["S5","S10","S15","S30","M1","M2","M4","M5","M10","M15","M30","H1","H2","H3","H4","H6","H8","H12","D","W","M"]
 
 # Keyword Arguments
