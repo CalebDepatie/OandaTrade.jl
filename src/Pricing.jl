@@ -71,9 +71,9 @@ Get the most recent price update of an instrument
 #Example
 
     getPrice(userconfig, ["EUR_USD","EUR_JPY"])
-    
+
 """
-function getPrice(config::config, instruments::Vector{String})
+function getPrice(config, instruments::Vector{String})
 
     r = HTTP.get(string("https://", config.hostname, "/v3/accounts/",config.account,"/pricing?instruments=", join(instruments,",")),
                 ["Authorization" => string("Bearer ", config.token)])
@@ -121,9 +121,9 @@ Returns a stream of price objects and apply a function to each one of them
         println(price)
     end
 """
-function streamPrice(f::Function, config::config,instruments::Vector{String})
+function streamPrice(f::Function, config, instruments::Vector{String})
 
-@async HTTP.open("GET", 
+@async HTTP.open("GET",
         string("https://", config.streamingHostname, "/v3/accounts/",config.account,"/pricing/stream?instruments=", join(instruments,",")),
         ["Authorization" => string("Bearer ", config.token)]) do io
             for line in eachline(io)
@@ -210,7 +210,7 @@ Information includes: time, granularity, open, high, low, close, volume and a co
 
 # Arguments
 - 'config::config': a valid struct with user configuration data
-- 'candleSpecs::Vector': A vector of tuples indicating the specifications for candle to retrieve. 
+- 'candleSpecs::Vector': A vector of tuples indicating the specifications for candle to retrieve.
     The tuple must have the instrument, granularity and price component in this order
 
 Valid granularities: ["S5","S10","S15","S30","M1","M2","M4","M5","M10","M15","M30","H1","H2","H3","H4","H6","H8","H12","D","W","M"]
@@ -230,8 +230,8 @@ Valid prices: "A" for ask, "B" for bid, "M" for medium or a combination of them
 
 """
 
-function getLatestCandles(config::config, candleSpecs::Vector, kwargs...,)
-    
+function getLatestCandles(config, candleSpecs::Vector, kwargs...,)
+
     cspec = join([join(i,":") for i in candleSpecs ],",")
 
     r = HTTP.get(string("https://",config.hostname,"/v3/accounts/",config.account,"/candles/latest"),
