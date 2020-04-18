@@ -28,14 +28,13 @@ mutable struct trade
     takeProfitOrder::takeProfitOrder
     stopLossOrder::stopLossOrder
     trailingStopLossOrder::trailingStopLossOrder
-    =# 
+    =#
     trade() = new()
 end
 
 
 "Coerce a given 'trade' into its proper types (Used internally)"
 function coerceTrade(trade::trade)
-    
     RFC = Dates.DateFormat("yyyy-mm-ddTHH:MM:SS.sssssssssZ")
 
     isdefined(trade,:averageClosePrice) && (trade.averageClosePrice = parse(Float32,trade.averageClosePrice))
@@ -54,7 +53,7 @@ function coerceTrade(trade::trade)
     isdefined(trade,:takeProfitOrder) && (trade.takeProfitOrder = coerceTakeProfitOrder(trade.takeProfitOrder))
     isdefined(trade,:stopLossOrder) && (trade.stopLossOrder = coerceStopLossOrder(trade.stopLossOrder))
     isdefined(trade,:trailingStopLossOrder) && (trade.trailingStopLossOrder = coerceTrailingStopLossOrder(trade.trailingStopLossOrder))
-    =# 
+    =#
     return trade
 end
 
@@ -74,7 +73,7 @@ JSON3.StructType(::Type{trade}) = JSON3.Mutable()
 # /accounts/{accountID}/openTrades Endpoint
 # ------------------------------------------------------------------------------------
 """
-    getTrades(config, instrument, [state, count; kwargs...])
+    getTrades(config::config, instrument::String, state::String="OPEN", count::Int=50; kwargs...)
 
 Return an array of trade struct
 
@@ -93,8 +92,8 @@ Return an array of trade struct
     getTrades(userConfig,"CLOSED";instrument="EUR_USD")
 
 """
-function getTrades(config::config, state::String="ALL", count::Int=50; kwargs...)
-   
+function getTrades(config, state::String="ALL", count::Int=50; kwargs...)
+
     r = HTTP.get(string("https://", config.hostname, "/v3/accounts/", config.account, "/trades"),
         ["Authorization" => string("Bearer ", config.token)];
         query = push!(Dict(), "state" => state, "count" => count, kwargs...))
@@ -104,12 +103,11 @@ function getTrades(config::config, state::String="ALL", count::Int=50; kwargs...
     for t in temp.trades
         t = coerceTrade(t)
     end
-    
     temp.trades # Not returning lastTransactionID. That info belongs to Transaction.jl
 end
 
 """
-    getOpenTrades(config)
+    getOpenTrades(config::config)
 
 Return an array of trade struct
 
@@ -121,8 +119,8 @@ Return an array of trade struct
     getOpenTrades(userconfig)
 
 """
-function getOpenTrades(config::config)
-   
+function getOpenTrades(config)
+
     r = HTTP.get(string("https://", config.hostname, "/v3/accounts/", config.account, "/openTrades"),
         ["Authorization" => string("Bearer ", config.token)])
 
@@ -132,7 +130,6 @@ function getOpenTrades(config::config)
     for t in temp.trades
         t = coerceTrade(t)
     end
-    
     return temp.trades # Not returning lastTransactionID. That info belongs to Transaction.jl
 end
 
@@ -150,26 +147,26 @@ end
 JSON3.StructType(::Type{singleTrade}) = JSON3.Mutable()
 
 """
-   getTrade(config, tradeID)
+   getTrade(config::config, tradeID::String)
 
-Return a specific trade 
+Return a specific trade
 
 # Arguments
 - 'config::config': a valid struct with user configuracion data
-- 'tradeID::Union{Int,String}': a valid trade ID
-    
+- 'id::string': a valid trade ID
+
 # Examples
-    
+
     getTrades(userconfig,"66")
 
 """
-function getTrade(config::config, tradeID::Union{Int,String})
-   
+function getTrade(config, tradeID::String)
+
     r = HTTP.get(string("https://", config.hostname, "/v3/accounts/", config.account,"/trades/",tradeID),
         ["Authorization" => string("Bearer ", config.token)])
 
     temp = JSON3.read(r.body,singleTrade)
-    
+
     return coerceTrade(temp.trade) # Not returning lastTransactionID. That info belongs to Transaction.jl
 end
 
@@ -194,9 +191,9 @@ struct closeUnits
 
     closeUnits(x::String) = new(x)
 
-    function closeUnits(x::Real) 
+    function closeUnits(x::Real)
         str = string(x)
-        new(str) 
+        new(str)
     end
 
 end
@@ -206,25 +203,25 @@ JSON3.StructType(::Type{closeUnits}) = JSON3.Struct()
 JSON3.StructType(::Type{closeUnitsResp}) = JSON3.Mutable()
 
 """
-    closeTrade(config, tradeID, units)
-    
+    closeTrade(config::config, tradeID::String, units::Union{Real,String}="ALL")
+
 Return an array of trade struct
 
 # Arguments
 - 'config::config': a valid struct with user configuracion data
-- 'tradeID::Union{Int,String}': a valid trade ID
-- 'units::Union{Number,String}': how much of the Trade to close in units or "ALL". Defaults to "ALL"
-        
+- 'tradeID::string': a valid trade ID
+- 'units::Union{Number,String}': how much of the Trade to close in units or "ALL"
+
 # Examples
-        
+
     closeTrade(userconfig,"66","ALL")
-        
+
 """
-function closeTrade(config::config, tradeID::Union{Int,String}, units::Union{Real,String}="ALL")
-    
+function closeTrade(config, tradeID::String, units::Union{Real,String}="ALL")
+
     r = HTTP.put(string("https://", config.hostname, "/v3/accounts/", config.account,"/trades/",tradeID,"/close"),
         ["Authorization" => string("Bearer ", config.token),"Content-Type" => "application/json"], JSON3.write(closeUnits(units)))
-  
+
     return JSON3.read(r.body,closeUnitsResp)
 
 end
@@ -260,27 +257,27 @@ JSON3.StructType(::Type{extensions}) = JSON3.Struct()
 JSON3.StructType(::Type{clientExtensionsResp}) = JSON3.Mutable()
 
 """
-    clientExtensions(config, tradeID; clientID, tag, comment)
-    
+    clientExtensions(config::config, tradeID::String; clientID::String="", tag::String="", comment::String="")
+
 Lets add user information to a specific Trade
 
 # Arguments
 - 'config::config': a valid struct with user configuracion data
-- 'tradeID::Union{Int,String}': a valid trade ID
+- 'tradeID::string': a valid trade ID
 - clientID, tag and comment: strings with the user information
-        
+
 # Example
-        
+
     clientExtensions(userconfig,"66", clientID="007",tag="foo")
-        
+
 """
-function clientExtensions(config::config, tradeID::Union{Int,String}; clientID::String="", tag::String="", comment::String="")
+function clientExtensions(config, tradeID::String; clientID::String="", tag::String="", comment::String="")
 
     data = clientExtensions(extensions(clientID, tag, comment))
 
     r = HTTP.put(string("https://", config.hostname, "/v3/accounts/", config.account,"/trades/",tradeID,"/clientExtensions"),
         ["Authorization" => string("Bearer ", config.token),"Content-Type" => "application/json"], JSON3.write(data))
-  
+
     return JSON3.read(r.body, clientExtensionsResp)
 
 end
@@ -294,10 +291,10 @@ mutable struct tradeOrdersResponse
     takeProfitOrderCancelTransaction::Dict{String,Any}
     takeProfitOrderTransaction::Dict{String,Any}
     takeProfitOrderFillTransaction::Dict{String,Any}
-    takeProfitOrderCreatedCancelTransaction::Dict{String,Any} 
+    takeProfitOrderCreatedCancelTransaction::Dict{String,Any}
     stopLossOrderCancelTransaction::Dict{String,Any}
     stopLossOrderTransaction::Dict{String,Any}
-    stopLossOrderCreatedCancelTransaction::Dict{String,Any} 
+    stopLossOrderCreatedCancelTransaction::Dict{String,Any}
     trailingStopLossOrderCancelTransaction::Dict{String,Any}
     trailingStopLossOrderTransaction::Dict{String,Any}
     relatedTransactionIDs::Vector{String}
@@ -317,7 +314,7 @@ end
 
 mutable struct stopLoss
     price::Real
-    distance::Real 
+    distance::Real
     timeInForce::String
     gtdTime::String
     # clientExtensions::extensions -> TODO
@@ -358,13 +355,13 @@ JSON3.omitempties(::Type{trailingStopLoss})=(:price,:timeInForce,:gtdTime)
 JSON3.StructType(::Type{tradeOrdersResponse}) = JSON3.Mutable()
 
 """
-    function setTradeOrders(config, tradeID; [TP, SL, tSL])
+    function setTradeOrders(config::config, tradeID::String; [TP::NamedTuple, SL::NamedTuple, tSL::NamedTuple ])
 
 Create or modify the linked orders for a specific trade
 
 # Arguments
 - 'config::config': a valid struct with user configuracion data
-- 'tradeID::Union{Int,String}': a valid trade ID
+- 'tradeID::string': a valid trade ID
 
 # Additional Arguments
 - 'TP::NamedTuple' Take Profit parameters
@@ -372,22 +369,22 @@ Create or modify the linked orders for a specific trade
 - 'tSL::NamedTuple': Trailing Stop Loss parameters
 
 At least one type of order parameters must be provided
-    
-# Valid order parameters
-- 'price::Real' :price to create o modify for the specific order. Valir for Stop Loss and Take Profit
-- 'distance::Real' :price distance to create o modify for the specific order. Valir for Stop Loss and Trailing Stip Loss
-- 'TIF::String': time in force for the order. Valid options are: GTC, GTD, GFD, FOK, IOC. Defaults to GTC
-- 'gtdTime::DateTime': time for GTD (Good unTill Date)
 
-Price and distance are incompatible. Only one can be set for a given order. 
+# Valid order parameters
+- 'price = :Real' :price to create o modify for the specific order. Valir for Stop Loss and Take Profit
+- 'distance = :Real' :price distance to create o modify for the specific order. Valir for Stop Loss and Trailing Stip Loss
+- 'TIF= String': time in force for the order. Valid options are: GTC, GTD, GFD, FOK, IOC. Defaults to GTC
+- 'gtdTime = DateTime': time for GTD (Good unTill Date)
+
+Price and distance are incompatible. Only one can be set for a given order.
 
 # Example
 
     setTradeOrders(userconfig, "34"; TP=(price=109.5,), SL=(distance=10,TIF="FOK")) # Do not forget the comma for 1 element NamedTuples
 
 """
-function setTradeOrders(config::config, tradeID::Union{Int,String}; TP::NamedTuple=NamedTuple(),SL::NamedTuple=NamedTuple(),tSL::NamedTuple=NamedTuple())
-   
+function setTradeOrders(config, tradeID::String; TP::NamedTuple=NamedTuple(),SL::NamedTuple=NamedTuple(),tSL::NamedTuple=NamedTuple())
+
     data = tradeOrders()
 
     if !isempty(TP)
@@ -417,11 +414,11 @@ function setTradeOrders(config::config, tradeID::Union{Int,String}; TP::NamedTup
 
         data.trailingStopLoss = tSLdetails
     end
-  
-    
+
+
     r = HTTP.put(string("https://", config.hostname, "/v3/accounts/", config.account,"/trades/",tradeID,"/orders"),
         ["Authorization" => string("Bearer ", config.token),"Content-Type" => "application/json"], JSON3.write(data))
-  
+
     return JSON3.read(r.body,tradeOrdersResponse)
 
 end
@@ -440,15 +437,15 @@ JSON3.StructType(::Type{nullTradeOrders}) = JSON3.Mutable()
 JSON3.omitempties(::Type{nullTradeOrders})=(:takeProfit,:stopLoss,:trailingStopLoss)
 
 """
-    function cancelTradeOrders(config, tradeID, orders2cancel)
+    function cancelTradeOrders(config::config, tradeID::String, orders2cancel::Vector{String})
 
 Cancel linked orders of a specific trade
 
 # Arguments
 - 'config::config': a valid struct with user configuracion data
-- 'tradeID::Union{Int,String}': a valid trade ID
-- 'orders2cancel::Vector{String}': list of orders to cancel. 
-    
+- 'tradeID::string': a valid trade ID
+- 'orders2cancel::Vector{String}': list of orders to cancel.
+
 order2cancel valid fields are "TP" for Take Profit, "SL" for Stop Loss and "tSL" for Trailing Stop Loss
 
 # Example
@@ -457,8 +454,8 @@ order2cancel valid fields are "TP" for Take Profit, "SL" for Stop Loss and "tSL"
 
 end
 """
-function cancelTradeOrders(config::config, tradeID::Union{Int,String}, orders2cancel::Vector{String})
-    
+function cancelTradeOrders(config, tradeID::String, orders2cancel::Vector{String})
+
     data=nullTradeOrders()
 
     in("TP",orders2cancel) && (data.takeProfit=missing)
