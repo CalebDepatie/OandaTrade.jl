@@ -4,10 +4,6 @@ using JSON3, HTTP, Dates
 export extensions, clientExtensions, takeProfit, stopLoss, trailingStopLoss # Structs also used in Trade.jl
 #TODO: export user functions
 
-# ------------------------------------------------------------------------------------
-# /accounts/{accountID}/orders POST Endpoint
-# ------------------------------------------------------------------------------------
-
 # clientExtension request structs
 struct extensions
     id::String
@@ -19,6 +15,10 @@ end
 struct clientExtensions
     clientExtensions::extensions
 end
+
+# ------------------------------------------------------------------------------------
+# /accounts/{accountID}/orders POST Endpoint
+# ------------------------------------------------------------------------------------
 
 # orders endpoint request structs
 mutable struct takeProfit
@@ -48,7 +48,7 @@ mutable struct trailingStopLoss
     trailingStopLoss() = new()
 end
 
-"Detailed Order struct from Oanda"
+"Detailed OrderRequest struct from Oanda"
 mutable struct orderRequest
     clientExtensions::clientExtensions 
     gtdTime
@@ -68,21 +68,11 @@ mutable struct orderRequest
     orderRequest() = new()
 end
 
-
 "For JSON parsing"
-struct order
+struct order2send
     order::orderRequest
 end
 
-"Coerce a given Order into its proper types (Used internally)"
-function coerceOrder(order::order)
-    RFC = Dates.DateFormat("yyyy-mm-ddTHH:MM:SS.sssssssssZ")
-    order.createTime = DateTime(first(order.createTime, 23), RFC)
-    order.price = parse(Float32, order.price)
-    order.units = parse(Int32, order.units)
-    order.stopLossOnFill.price = parse(Float32, order.stopLossOnFill.price)
-    return order
-end
 
 # Declaring JSON3 struct types
 
@@ -100,7 +90,7 @@ JSON3.omitempties(::Type{orderRequest})=(:price, :units, :priceBound,:triggerCon
                                          :takeProfitOnFill,:stopLossOnFill,:trailingStopLossOnFill,
                                          :clientExtensions,:tradeClientExtensions)
 
-JSON3.StructType(::Type{order}) = JSON3.Struct()
+JSON3.StructType(::Type{order2send}) = JSON3.Struct()
 
 
 # market order -----------------------------------------------------------------------
@@ -158,7 +148,7 @@ function marketOrder(config::config, instrument::String, units::Real;
 
     # TODO: Client Extensions
 
-    data = order(o)
+    data = order2send(o)
 
     r = HTTP.post(string("https://",config.hostname,"/v3/accounts/",config.account,"/orders",),
         ["Authorization" => string("Bearer ", config.token), "Content-Type" => "application/json", ],
@@ -209,7 +199,7 @@ function nonMarketOrder(config::config, type::String, instrument::String, units:
         haskey(SL, :timeInForce) && (SLdetails.timeInForce = SL.timeInForce)
         haskey(SL, :gtdTime) && (SLdetails.price = Dates.format(SL.gtdTime,"yyyy-mm-ddTHH:MM:SS.sss000000Z"))
 
-o.stopLossOnFill = SLdetails
+        o.stopLossOnFill = SLdetails
     end
 
     if !isempty(tSL)
@@ -223,7 +213,7 @@ o.stopLossOnFill = SLdetails
 
     # TODO: Client Extensions
 
-    data = order(o)
+    data = order2send(o)
 
     r = HTTP.post(string("https://",config.hostname,"/v3/accounts/",config.account,"/orders",),
     ["Authorization" => string("Bearer ", config.token), "Content-Type" => "application/json", ],
@@ -239,7 +229,7 @@ end
 
 #Examples
 
-   limitOrder(userData,"EUR_uSD",100, 1.10)
+   limitOrder(userData,"EUR_USD",100, 1.10)
 
    limitOrder(userData,"EUR_JPY",100,117,SL=(distance=1,),TP=(price=12,),tSL=(distance=3,))
 
@@ -298,10 +288,168 @@ marketIfTouchedOrder(config::config, instrument::String, units::Real, price::Rea
 # /accounts/{accountID}/orders GET Endpoint
 # ------------------------------------------------------------------------------------
 
+"Detailed OrderRequest struct from Oanda"
+mutable struct positionCloseout
+    instrument::String
+    units::String
+
+    positionCloseout() = new()    
+end
+
+mutable struct marginCloseout
+    reason::String
+
+    marginCloseout() = new()    
+end
+
+mutable struct tradeClose
+    tradeID::String
+    clientTradeID::String
+    units::String
+
+    tradeClose() = new()    
+end
+
+mutable struct order
+    cancelledTime
+    cancellingTransactionID
+    clientExtensions::clientExtensions 
+    clientTradeID
+    createTime
+    delayedTradeClose
+    distance
+    filledTime
+    fillingTransactionID
+    gtdTime
+    #guaranteed -> deprecated
+    #guaranteedExecutioPremium -> deprecateed
+    id
+    initialMaketPrice
+    instrument # instrument of the order
+    longpositionCloseout::positionCloseout
+    marginCloseout::marginCloseout
+    positionFill # Type of position fill on the order
+    price # Price the order is placed at
+    priceBound
+    replacedbyOrderID
+    replacesOrderID
+    shortpositionCloseout::positionCloseout
+    state
+    stopLossOnFill::stopLoss # Stop loss settings for an order
+    takeProfitOnFill::takeProfit
+    timeInForce # Type of time in force
+    tradeClientExtensions::clientExtensions
+    tradeClose::tradeClose
+    tradeCloseID
+    tradeID
+    tradeOpenedID
+    tradeReducedID
+    tradeState
+    trailingStopLossOnFill::trailingStopLoss
+    trailingStopValue
+    triggerCondition # Trigger condition of the order
+    type # Type of order
+    units # Number of units (negative for a short, positive for a long)
+
+    order() = new()
+end
+
+mutable struct orders
+    orders::Vector{order}
+    lastTransactionID::String
+
+    orders() = new()
+end
+
+"Coerce a given Order into its proper types (Used internally)"
+
+function coerceStopLoss(SL::stopLoss)
+    isdefined(SL, :priceBound) && (SL.price = parse(Float32, SL.price))
+end
+
+function coerceOrder(order::order)
+    RFC = Dates.DateFormat("yyyy-mm-ddTHH:MM:SS.sssssssssZ")
+
+    isdefined(order, :cancelledTime) && (order.cancelledTime = DateTime(first(order.cancelledTime, 23), RFC))
+    order.createTime = DateTime(first(order.createTime, 23), RFC)
+    (order.units != "ALL") && (order.units = parse(Float32,order.units))
+    isdefined(order, :filledTime) && (order.filledTime = DateTime(first(order.filledTime, 23), RFC))
+    isdefined(order, :gtdTime) && (order.gtdTime = DateTime(first(order.gtdTime, 23), RFC))
+
+    isdefined(order, :price) && (order.price = parse(Float32, order.price))
+    isdefined(order, :priceBound) && (order.priceBound = parse(Float32, order.priceBound))
+    isdefined(order, :trailingStopValue) && (order.trailingStopValue = parse(Float32, order.trailingStopValue))
+    isdefined(order, :stopLossOnFill) && coerceStopLoss(order.stopLossOnFill)
+    isdefined(order, :takeProfitOnFill) && (order.takeProfitOnFill.price = parse(Float32, order.takeProfitOnFill.price))
+
+    return order
+end
+
+
+# Declaring JSON3 struct types
+JSON3.StructType(::Type{positionCloseout}) = JSON3.Mutable()
+JSON3.StructType(::Type{marginCloseout}) = JSON3.Mutable()
+JSON3.StructType(::Type{tradeClose}) = JSON3.Mutable()
+JSON3.StructType(::Type{order}) = JSON3.Mutable()
+    JSON3.excludes(::Type{order})=(:guaranteed,:guaranteedExecutioPremium) #ignore deprecated fields when reading 
+JSON3.StructType(::Type{orders}) = JSON3.Mutable()
+
+
+
+"""
+getOrders(config, count::Int=50; kwargs...)
+getOrders(config, IDlist::Vector; kwargs...)
+
+# Keyword Arguments
+    - 'state::String: a string with values "PENDING", "FILLED", "TRIGGERED", "CANCELLED" or "ALL". Defaults to "PENDING"
+    - 'instrument::String'
+    - 'beforeID::String': Last ID to retrieve
+
+#Examples
+    getOrders(userData,5)
+    getOrders(userData,25, state="FILLED", instrument="EUR_USD")
+    getOrders(userData,["123","234","345"])
+
+
+"""
+function getOrders(config, count::Int=50; kwargs...)
+
+
+    r = HTTP.get(string("https://",config.hostname,"/v3/accounts/",config.account,"/orders",),
+                        ["Authorization" => string("Bearer ", config.token)];
+                        query = push!(Dict(),"count"=>count, kwargs...,),)
+
+    temp = JSON3.read(r.body, orders)
+
+    for o in temp.orders #
+        o = coerceOrder(o)
+    end
+    
+    temp.orders
+    
+end
+
+function getOrders(config, IDlist::Vector; kwargs...)
+    
+    r = HTTP.get(string("https://",config.hostname,"/v3/accounts/",config.account,"/orders",),
+                        ["Authorization" => string("Bearer ", config.token)];
+                        query = push!(Dict(),"ids" => join(IDlist,","), kwargs...,),)    
+    
+    temp = JSON3.read(r.body, orders)
+
+    for o in temp.orders 
+        o = coerceOrder(o)
+    end
+    
+    temp.orders
+
+end
 
 # ------------------------------------------------------------------------------------
 # /accounts/{accountID}/pendingOrders GET Endpoint
 # ------------------------------------------------------------------------------------
+
+
 
 
 # ------------------------------------------------------------------------------------
