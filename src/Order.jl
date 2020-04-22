@@ -410,10 +410,8 @@ getOrders(config, IDlist::Vector; kwargs...)
     getOrders(userData,25, state="FILLED", instrument="EUR_USD")
     getOrders(userData,["123","234","345"])
 
-
 """
 function getOrders(config, count::Int=50; kwargs...)
-
 
     r = HTTP.get(string("https://",config.hostname,"/v3/accounts/",config.account,"/orders",),
                         ["Authorization" => string("Bearer ", config.token)];
@@ -448,13 +446,61 @@ end
 # ------------------------------------------------------------------------------------
 # /accounts/{accountID}/pendingOrders GET Endpoint
 # ------------------------------------------------------------------------------------
+"""
+getPendingOrders(config)
 
+#Examples
+    getPendingOrders(userData
+  
 
+"""
+function getPendingOrders(config)
+    
+    r = HTTP.get(string("https://",config.hostname,"/v3/accounts/",config.account,"/pendingOrders",),
+                        ["Authorization" => string("Bearer ", config.token)],)    
+    
+    temp = JSON3.read(r.body, orders)
+
+    for o in temp.orders 
+        o = coerceOrder(o)
+    end
+    
+    temp.orders
+
+end
 
 
 # ------------------------------------------------------------------------------------
 # /accounts/{accountID}/orders/{orderSpecifier} GET Endpoint
 # ------------------------------------------------------------------------------------
+
+
+mutable struct singleOrder
+    order::order
+    lastTransactionID::String
+
+    singleOrder() = new()
+end
+
+JSON3.StructType(::Type{singleOrder}) = JSON3.Mutable()
+
+"""
+getOrder(config, ID::Union{String,Int})
+
+#Examples
+    getOrder(userdata,"100")
+  
+"""
+function getOrder(config, ID::Union{String,Int})
+    
+    r = HTTP.get(string("https://",config.hostname,"/v3/accounts/",config.account,"/orders/",ID),
+                        ["Authorization" => string("Bearer ", config.token)],)    
+    
+    temp = JSON3.read(r.body, singleOrder)
+       
+    coerceOrder(temp.order)
+
+end
 
 
 # ------------------------------------------------------------------------------------
