@@ -16,6 +16,11 @@ struct clientExtensions
     clientExtensions::extensions
 end
 
+# Declaring JSON3 struct types
+JSON3.StructType(::Type{clientExtensions}) = JSON3.Struct()
+JSON3.StructType(::Type{extensions}) = JSON3.Struct()
+
+
 # ------------------------------------------------------------------------------------
 # /accounts/{accountID}/orders POST Endpoint
 # ------------------------------------------------------------------------------------
@@ -26,6 +31,7 @@ mutable struct takeProfit
     timeInForce::String
     gtdTime::String
     # clientExtensions::extensions -> TODO
+
     takeProfit() = new()
 end
 
@@ -73,7 +79,6 @@ struct order2send
     order::orderRequest
 end
 
-
 # Declaring JSON3 struct types
 
 JSON3.StructType(::Type{takeProfit}) = JSON3.Mutable()
@@ -91,7 +96,6 @@ JSON3.omitempties(::Type{orderRequest})=(:price, :units, :priceBound,:triggerCon
                                          :clientExtensions,:tradeClientExtensions)
 
 JSON3.StructType(::Type{order2send}) = JSON3.Struct()
-
 
 # market order -----------------------------------------------------------------------
 """
@@ -154,13 +158,13 @@ function marketOrder(config::config, instrument::String, units::Real;
         ["Authorization" => string("Bearer ", config.token), "Content-Type" => "application/json", ],
         JSON3.write(data),)
 
-    return JSON3.read(r.body)
+    return JSON3.read(r.body,Dict{String,Any}) 
 end
 
 
 # Other type of orders -----------------------------------------------------------------------
 """
- nonmarketOrder(config, type, instrument, units, price;[TIF, gtdTime, positionFill, trigge, priceBound, TP ,SL ,tSL, clientExt ,tradeExt])
+ nonMarketOrder(config, type, instrument, units, price;[TIF, gtdTime, positionFill, trigge, priceBound, TP ,SL ,tSL, clientExt ,tradeExt])
 
  generic order function for limit, stop and marketIfTouchedOrders
 
@@ -219,7 +223,7 @@ function nonMarketOrder(config::config, type::String, instrument::String, units:
     ["Authorization" => string("Bearer ", config.token), "Content-Type" => "application/json", ],
     JSON3.write(data),)
 
-    return JSON3.read(r.body)
+    return JSON3.read(r.body,Dict{String,Any})
 end
 
 # limit order -----------------------------------------------------------------------
@@ -288,112 +292,41 @@ marketIfTouchedOrder(config::config, instrument::String, units::Real, price::Rea
 # /accounts/{accountID}/orders GET Endpoint
 # ------------------------------------------------------------------------------------
 
-"Detailed OrderRequest struct from Oanda"
-mutable struct positionCloseout
-    instrument::String
-    units::String
-
-    positionCloseout() = new()    
-end
-
-mutable struct marginCloseout
-    reason::String
-
-    marginCloseout() = new()    
-end
-
-mutable struct tradeClose
-    tradeID::String
-    clientTradeID::String
-    units::String
-
-    tradeClose() = new()    
-end
-
-mutable struct order
-    cancelledTime
-    cancellingTransactionID
-    clientExtensions::clientExtensions 
-    clientTradeID
-    createTime
-    delayedTradeClose
-    distance
-    filledTime
-    fillingTransactionID
-    gtdTime
-    #guaranteed -> deprecated
-    #guaranteedExecutioPremium -> deprecateed
-    id
-    initialMaketPrice
-    instrument # instrument of the order
-    longpositionCloseout::positionCloseout
-    marginCloseout::marginCloseout
-    positionFill # Type of position fill on the order
-    price # Price the order is placed at
-    priceBound
-    replacedbyOrderID
-    replacesOrderID
-    shortpositionCloseout::positionCloseout
-    state
-    stopLossOnFill::stopLoss # Stop loss settings for an order
-    takeProfitOnFill::takeProfit
-    timeInForce # Type of time in force
-    tradeClientExtensions::clientExtensions
-    tradeClose::tradeClose
-    tradeCloseID
-    tradeID
-    tradeOpenedID
-    tradeReducedID
-    tradeState
-    trailingStopLossOnFill::trailingStopLoss
-    trailingStopValue
-    triggerCondition # Trigger condition of the order
-    type # Type of order
-    units # Number of units (negative for a short, positive for a long)
-
-    order() = new()
-end
-
 mutable struct orders
-    orders::Vector{order}
+    orders::Array{Dict{String,Any},1}
     lastTransactionID::String
 
     orders() = new()
 end
 
-"Coerce a given Order into its proper types (Used internally)"
-
-function coerceStopLoss(SL::stopLoss)
-    isdefined(SL, :priceBound) && (SL.price = parse(Float32, SL.price))
-end
-
-function coerceOrder(order::order)
-    RFC = Dates.DateFormat("yyyy-mm-ddTHH:MM:SS.sssssssssZ")
-
-    isdefined(order, :cancelledTime) && (order.cancelledTime = DateTime(first(order.cancelledTime, 23), RFC))
-    order.createTime = DateTime(first(order.createTime, 23), RFC)
-    (order.units != "ALL") && (order.units = parse(Float32,order.units))
-    isdefined(order, :filledTime) && (order.filledTime = DateTime(first(order.filledTime, 23), RFC))
-    isdefined(order, :gtdTime) && (order.gtdTime = DateTime(first(order.gtdTime, 23), RFC))
-
-    isdefined(order, :price) && (order.price = parse(Float32, order.price))
-    isdefined(order, :priceBound) && (order.priceBound = parse(Float32, order.priceBound))
-    isdefined(order, :trailingStopValue) && (order.trailingStopValue = parse(Float32, order.trailingStopValue))
-    isdefined(order, :stopLossOnFill) && coerceStopLoss(order.stopLossOnFill)
-    isdefined(order, :takeProfitOnFill) && (order.takeProfitOnFill.price = parse(Float32, order.takeProfitOnFill.price))
-
-    return order
-end
-
-
 # Declaring JSON3 struct types
-JSON3.StructType(::Type{positionCloseout}) = JSON3.Mutable()
-JSON3.StructType(::Type{marginCloseout}) = JSON3.Mutable()
-JSON3.StructType(::Type{tradeClose}) = JSON3.Mutable()
-JSON3.StructType(::Type{order}) = JSON3.Mutable()
-    JSON3.excludes(::Type{order})=(:guaranteed,:guaranteedExecutioPremium) #ignore deprecated fields when reading 
 JSON3.StructType(::Type{orders}) = JSON3.Mutable()
 
+"Recursive coersion of order Dictionaries to proper Julia types"
+function coerceOrderDict(oDict::Dict{String,Any}) #Also used in getOrder endpoints
+
+    valueFields = ["price","priceBound", "distance","trailingStopValue","initialMaketPrice"]
+
+    timeFields = ["createTime","gtdTime","filledTime","cancelledTime"]
+
+    RFC = Dates.DateFormat("yyyy-mm-ddTHH:MM:SS.sssssssssZ")
+
+    for (key, value) in oDict
+        if eltype(value) == Pair{String,Any}
+            oDict[key] = coerceOrderDict(oDict[key]) #Recursion for Dictionaries inside a transaction field
+        elseif eltype(value) == Any #'asks' & 'bids' in 'fullPrice' have an array of liquidity, prices
+            oDict[key] = collect(coerceOrderDict.(oDict[key]))
+        elseif key in valueFields
+            oDict[key] = parse(Float32, value)
+        elseif key == "units" && value != "ALL"
+            oDict[key] = parse(Float32, value)
+        elseif key in timeFields
+            oDict[key] = DateTime(first(value, 23), RFC)
+        end
+    end
+
+    return oDict
+end
 
 
 """
@@ -419,12 +352,11 @@ function getOrders(config, count::Int=50; kwargs...)
 
     temp = JSON3.read(r.body, orders)
 
-    for o in temp.orders #
-        o = coerceOrder(o)
+    for dict in temp.orders
+        dict = coerceOrderDict(dict)
     end
-    
-    temp.orders
-    
+
+    return temp.orders
 end
 
 function getOrders(config, IDlist::Vector; kwargs...)
@@ -432,15 +364,14 @@ function getOrders(config, IDlist::Vector; kwargs...)
     r = HTTP.get(string("https://",config.hostname,"/v3/accounts/",config.account,"/orders",),
                         ["Authorization" => string("Bearer ", config.token)];
                         query = push!(Dict(),"ids" => join(IDlist,","), kwargs...,),)    
-    
+
     temp = JSON3.read(r.body, orders)
 
-    for o in temp.orders 
-        o = coerceOrder(o)
+    for dict in temp.orders
+        dict = coerceOrderDict(dict)
     end
-    
-    temp.orders
 
+    return temp.orders
 end
 
 # ------------------------------------------------------------------------------------
@@ -450,9 +381,8 @@ end
 getPendingOrders(config)
 
 #Examples
-    getPendingOrders(userData
+    getPendingOrders(userData)
   
-
 """
 function getPendingOrders(config)
     
@@ -461,12 +391,11 @@ function getPendingOrders(config)
     
     temp = JSON3.read(r.body, orders)
 
-    for o in temp.orders 
-        o = coerceOrder(o)
+    for dict in temp.orders
+        dict = coerceOrderDict(dict)
     end
-    
-    temp.orders
 
+    return temp.orders
 end
 
 
@@ -474,9 +403,8 @@ end
 # /accounts/{accountID}/orders/{orderSpecifier} GET Endpoint
 # ------------------------------------------------------------------------------------
 
-
 mutable struct singleOrder
-    order::order
+    order::Dict{String,Any}
     lastTransactionID::String
 
     singleOrder() = new()
@@ -491,30 +419,137 @@ getOrder(config, ID::Union{String,Int})
     getOrder(userdata,"100")
   
 """
-function getOrder(config, ID::Union{String,Int})
+function getOrder(config, orderID::Union{String,Int})
     
-    r = HTTP.get(string("https://",config.hostname,"/v3/accounts/",config.account,"/orders/",ID),
+    r = HTTP.get(string("https://",config.hostname,"/v3/accounts/",config.account,"/orders/",orderID),
                         ["Authorization" => string("Bearer ", config.token)],)    
     
-    temp = JSON3.read(r.body, singleOrder)
-       
-    coerceOrder(temp.order)
+    temp = JSON3.read(r.body, singleOrder)       
+    temp.order = coerceOrderDict(temp.order)
 
+    return temp.order
 end
-
 
 # ------------------------------------------------------------------------------------
 # /accounts/{accountID}/orders/{orderSpecifier} PUT Endpoint
 # ------------------------------------------------------------------------------------
 
+"""
+ replaceOrder(config, ID, instrument, units;[TIF, positionFill, priceBound, TP ,SL ,tSL, clientExt ,tradeExt])
+
+#Examples
+
+   replaceOrder(userData,165,"LIMIT","EUR_JPY",100)
+   replaceOrder(userData,170,"EUR_CHF",100,SL=(distance=0.1,),TP=(price=1.12,),tSL=(distance=0.3,))
+
+"""
+function replaceOrder(config::config, orderID::Union{Int,String},type::String, instrument::String, units::Real, price::Real;
+    TIF::String = "GTC", gtdTime::Union{Nothing,String}=nothing, positionFill::String = "DEFAULT", trigger::String="DEFAULT",priceBound::Union{Nothing,String}=nothing,
+    TP::NamedTuple=NamedTuple(),SL::NamedTuple=NamedTuple(),tSL::NamedTuple=NamedTuple(),
+    clientExt::NamedTuple=NamedTuple(),tradeExt::NamedTuple=NamedTuple())
+
+    o = orderRequest()
+
+    o.type = type
+    o.instrument = instrument
+    o.units = units
+    o.price = price
+    o.timeInForce = TIF
+    o.priceBound = priceBound
+    !isnothing(gtdTime) && (o.gtdTime = Dates.format(gtdTime,"yyyy-mm-ddTHH:MM:SS.sss000000Z"))
+    o.positionFill = positionFill
+    o.triggerCondition = trigger
+
+    if !isempty(TP)
+        TPdetails = takeProfit()
+        haskey(TP, :price) && (TPdetails.price = TP.price)
+        haskey(TP, :timeInForce) && (TPdetails.timeInForce = TP.timeInForce)
+        haskey(TP, :gtdTime) && (TPdetails.price = Dates.format(TP.gtdTime,"yyyy-mm-ddTHH:MM:SS.sss000000Z"))
+
+        o.takeProfitOnFill = TPdetails
+    end
+
+    if !isempty(SL)
+        SLdetails = stopLoss()
+        haskey(SL, :price) && (SLdetails.price = SL.price)
+        haskey(SL, :distance) && (SLdetails.distance = SL.distance)
+        haskey(SL, :timeInForce) && (SLdetails.timeInForce = SL.timeInForce)
+        haskey(SL, :gtdTime) && (SLdetails.price = Dates.format(SL.gtdTime,"yyyy-mm-ddTHH:MM:SS.sss000000Z"))
+
+        o.stopLossOnFill = SLdetails
+    end
+
+    if !isempty(tSL)
+        tSLdetails = trailingStopLoss()
+        haskey(tSL, :distance) && (tSLdetails.distance = tSL.distance)
+        haskey(tSL, :timeInForce) && (tSLdetails.timeInForce = tSL.timeInForce)
+        haskey(tSL, :gtdTime) && (tSLdetails.price = Dates.format(tSL.gtdTime,"yyyy-mm-ddTHH:MM:SS.sss000000Z"))
+
+        o.trailingStopLossOnFill = tSLdetails
+    end
+
+    # TODO: Client Extensions
+
+    data = order2send(o)
+
+    r = HTTP.put(string("https://",config.hostname,"/v3/accounts/",config.account,"/orders/",orderID),
+    ["Authorization" => string("Bearer ", config.token), "Content-Type" => "application/json", ],
+    JSON3.write(data),)
+
+    return JSON3.read(r.body,Dict{String,Any})
+end
 
 # ------------------------------------------------------------------------------------
 # /accounts/{accountID}/orders/{orderSpecifier}/cancel PUT Endpoint
 # ------------------------------------------------------------------------------------
 
+"""
+cancelOrder(config, ID::Union{String,Int})
+
+#Examples
+    cancelOrder(userdata,"100")
+  
+"""
+function cancelOrder(config, ID::Union{String,Int})
+    
+    r = HTTP.put(string("https://",config.hostname,"/v3/accounts/",config.account,"/orders/",ID,"/cancel"),
+                        ["Authorization" => string("Bearer ", config.token)],)    
+           
+    temp = JSON3.read(r.body,Dict{String,Any})
+
+    temp["orderCancelTransaction"]["time"] = DateTime(first(temp["orderCancelTransaction"]["time"], 23),Dates.DateFormat("yyyy-mm-ddTHH:MM:SS.sssssssssZ"))
+    
+    temp
+end
 
 # ------------------------------------------------------------------------------------
 # /accounts/{accountID}/orders/{orderSpecifier}/clientExtension PUT Endpoint
 # ------------------------------------------------------------------------------------
 
+"""
+    orderClientExtensions(config::config, tradeID::String; clientID::String="", tag::String="", comment::String="")
+
+Lets add user information to a specific Trade
+
+# Arguments
+- 'config::config': a valid struct with user configuracion data
+- 'tradeID::string': a valid trade ID
+- clientID, tag and comment: strings with the user information
+
+# Example
+
+    orderClientExtensions(userconfig,"66", clientID="007",tag="foo")
+
+"""
+function orderClientExtensions(config, orderID::Union{Int,String}; clientID::String="", tag::String="", comment::String="")
+
+    data = clientExtensions(extensions(clientID, tag, comment))
+
+    r = HTTP.put(string("https://", config.hostname, "/v3/accounts/", config.account,"/orders/",orderID,"/clientExtensions"),
+        ["Authorization" => string("Bearer ", config.token),"Content-Type" => "application/json"], JSON3.write(data))   
+
+    return JSON3.read(r.body, Dict{String,Any})
+
 end
+
+end #module
