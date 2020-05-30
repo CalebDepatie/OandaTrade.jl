@@ -62,7 +62,7 @@ mutable struct account
     marginUsed # Amount of margin used
     openPositionCount # Number of open positions
     openTradeCount # Number of open trades
-    orders::Vector{Order.order} # Orders of the account
+    orders::Vector{Order.orderRequest} # Orders of the account
     pendingOrderCount # Number of pending orders
     pl # The profit or loss over the lifetime of the account
     positionValue # Value of an accounts open positions
@@ -184,7 +184,7 @@ end
 
 "Coerce a given Account into its proper types (Used for getAccount Method)"
 function coerceAccount(acc::account)
-    temp = Vector{Order.order}()
+    temp = Vector{Order.orderRequest}()
     for order in acc.orders
         order = Order.coerceOrder(order)
         push!(temp, order)

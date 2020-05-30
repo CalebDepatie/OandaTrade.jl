@@ -392,9 +392,12 @@ function getOrderBook(config, instrument::String, time::DateTime = now())
         query = Dict("time" => time),
     )
 
-    unzipr = GzipDecompressorStream(IOBuffer(String(r.body))) #Response is compressed
+    #TODO: Fix to check for gzip headers
+    #unzipr = GzipDecompressorStream(IOBuffer(String(r.body))) #Response is compressed
 
-    temp = JSON3.read(unzipr, orderBookTopLayer)
+    #temp = JSON3.read(unzipr, orderBookTopLayer)
+
+    temp = JSON3.read(r.body, orderBookTopLayer)
 
     temp.orderBook = coerceOrderBook(temp.orderBook)
 
@@ -480,9 +483,12 @@ function getPositionBook(config, instrument::String, time::DateTime = now())
         query = Dict("time" => time),
     )
 
-    unzipr = GzipDecompressorStream(IOBuffer(String(r.body))) #Response is compressed
+    #TODO: Check for gzip headers
+    #unzipr = GzipDecompressorStream(IOBuffer(String(r.body))) #Response is compressed
 
-    temp = JSON3.read(unzipr, positionBookTopLayer)
+    #temp = JSON3.read(unzipr, positionBookTopLayer)
+
+    temp = JSON3.read(r.body, positionBookTopLayer)
 
     temp.positionBook = coercePositionBook(temp.positionBook)
 
