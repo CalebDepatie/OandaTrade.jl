@@ -14,4 +14,8 @@ makedocs(
                             "position.md", "transaction.md"]]
 )
 
-deploydocs(repo = "github.com/CalebDepatie/Julianda.git")
+deploydocs(
+    repo = "github.com/CalebDepatie/Julianda.git",
+    devbranch = "dev"
+    versions = ["stable" => "v^", "v#.#", "dev"]
+    )

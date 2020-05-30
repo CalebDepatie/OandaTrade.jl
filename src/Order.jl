@@ -84,18 +84,18 @@ end
 # Declaring JSON3 struct types
 
 JSON3.StructType(::Type{takeProfit}) = JSON3.Mutable()
-JSON3.omitempties(::Type{takeProfit})=(:price,:timeInForce,:gtdTime)
+#JSON3.omitempties(::Type{takeProfit})=(:price,:timeInForce,:gtdTime)
 
 JSON3.StructType(::Type{stopLoss}) = JSON3.Mutable()
-JSON3.omitempties(::Type{stopLoss})=(:price,:distance,:timeInForce,:gtdTime)
+#JSON3.omitempties(::Type{stopLoss})=(:price,:distance,:timeInForce,:gtdTime)
 
 JSON3.StructType(::Type{trailingStopLoss}) = JSON3.Mutable()
-JSON3.omitempties(::Type{trailingStopLoss})=(:price,:timeInForce,:gtdTime)
+#JSON3.omitempties(::Type{trailingStopLoss})=(:price,:timeInForce,:gtdTime)
 
 JSON3.StructType(::Type{orderRequest}) = JSON3.Mutable()
-JSON3.omitempties(::Type{orderRequest})=(:price, :units, :distance, :priceBound,:triggerCondition,:gtdTime,
-                                         :takeProfitOnFill,:stopLossOnFill,:trailingStopLossOnFill,
-                                         :clientExtensions,:tradeID, :tradeClientExtensions)
+#JSON3.omitempties(::Type{orderRequest})=(:price, :units, :distance, :priceBound,:triggerCondition,:gtdTime,
+                                         #:takeProfitOnFill,:stopLossOnFill,:trailingStopLossOnFill,
+                                         #:clientExtensions,:tradeID, :tradeClientExtensions)
 
 JSON3.StructType(::Type{order2send}) = JSON3.Struct()
 
