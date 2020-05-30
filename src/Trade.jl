@@ -35,7 +35,6 @@ end
 
 "Coerce a given 'trade' into its proper types (Used internally)"
 function coerceTrade(trade::trade)
-
     RFC = Dates.DateFormat("yyyy-mm-ddTHH:MM:SS.sssssssssZ")
 
     isdefined(trade,:averageClosePrice) && (trade.averageClosePrice = parse(Float32,trade.averageClosePrice))
@@ -104,7 +103,6 @@ function getTrades(config, state::String="ALL", count::Int=50; kwargs...)
     for t in temp.trades
         t = coerceTrade(t)
     end
-
     temp.trades # Not returning lastTransactionID. That info belongs to Transaction.jl
 end
 
@@ -132,7 +130,6 @@ function getOpenTrades(config)
     for t in temp.trades
         t = coerceTrade(t)
     end
-
     return temp.trades # Not returning lastTransactionID. That info belongs to Transaction.jl
 end
 
