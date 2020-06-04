@@ -1,6 +1,9 @@
 module Transaction
 
 using HTTP, JSON3, Dates
+
+export getTransactionPages, getTransaction, getTransactions
+
 #------------------------------------------------------------------------------------
 #/accounts/{accountID}/transactions Endpoint
 #------------------------------------------------------------------------------------

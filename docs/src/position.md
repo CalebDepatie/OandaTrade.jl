@@ -12,3 +12,9 @@ Position.getPosition
 Position.closePosition
 Position.closePositionFull
 ```
+
+## Structs
+```@docs
+Position.posData
+Position.position
+```

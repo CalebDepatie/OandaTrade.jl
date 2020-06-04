@@ -1,8 +1,10 @@
 module Order
 using JSON3, HTTP, Dates
 
-export extensions, clientExtensions, takeProfit, stopLoss, trailingStopLoss # Structs also used in Trade.jl
-#TODO: export user functions
+export extensions, clientExtensions, takeProfit, stopLoss, trailingStopLoss,
+    marketOrder, nonMarketOrder, limitOrder, stopOrder, marketIfTouchedOrder,
+    relatedOrder, getOrders, getPendingOrders, getOrder, replaceOrder, cancelOrder,
+    orderClientExtensions
 
 # clientExtension request structs
 struct extensions
@@ -84,18 +86,18 @@ end
 # Declaring JSON3 struct types
 
 JSON3.StructType(::Type{takeProfit}) = JSON3.Mutable()
-#JSON3.omitempties(::Type{takeProfit})=(:price,:timeInForce,:gtdTime)
+JSON3.omitempties(::Type{takeProfit})=(:price,:timeInForce,:gtdTime)
 
 JSON3.StructType(::Type{stopLoss}) = JSON3.Mutable()
-#JSON3.omitempties(::Type{stopLoss})=(:price,:distance,:timeInForce,:gtdTime)
+JSON3.omitempties(::Type{stopLoss})=(:price,:distance,:timeInForce,:gtdTime)
 
 JSON3.StructType(::Type{trailingStopLoss}) = JSON3.Mutable()
-#JSON3.omitempties(::Type{trailingStopLoss})=(:price,:timeInForce,:gtdTime)
+JSON3.omitempties(::Type{trailingStopLoss})=(:price,:timeInForce,:gtdTime)
 
 JSON3.StructType(::Type{orderRequest}) = JSON3.Mutable()
-#JSON3.omitempties(::Type{orderRequest})=(:price, :units, :distance, :priceBound,:triggerCondition,:gtdTime,
-                                         #:takeProfitOnFill,:stopLossOnFill,:trailingStopLossOnFill,
-                                         #:clientExtensions,:tradeID, :tradeClientExtensions)
+JSON3.omitempties(::Type{orderRequest})=(:price, :units, :distance, :priceBound,:triggerCondition,:gtdTime,
+                                         :takeProfitOnFill,:stopLossOnFill,:trailingStopLossOnFill,
+                                         :clientExtensions,:tradeID, :tradeClientExtensions)
 
 JSON3.StructType(::Type{order2send}) = JSON3.Struct()
 

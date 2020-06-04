@@ -10,3 +10,8 @@ Transaction.getTransactionPages
 Transaction.getTransaction
 Transaction.getTransactions
 ```
+
+## Structs
+```@docs
+Transaction.transactionPages
+```

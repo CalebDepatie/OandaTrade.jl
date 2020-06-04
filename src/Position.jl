@@ -1,6 +1,8 @@
 module Position
 using JSON3, HTTP
 
+export listPositions, listOpenPositions, getPosition, closePosition, closePositionFull
+
 "Individual data for positions (A Long or Short)"
 mutable struct posData
     pl # The profit / Loss

@@ -21,3 +21,8 @@ Config.loadConfig
 Config.saveConfig
 Config.changeAccount
 ```
+
+## Structs
+```@docs
+Config.config
+```

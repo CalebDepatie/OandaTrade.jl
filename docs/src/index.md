@@ -3,7 +3,11 @@
 
 Julianda is an API wrapper for Oanda's REST-v20 API. This wrapper allows you to access the full functionality of Oanda's API, including configuring your account, creating orders, and checking prices.
 
+**Note: All functions are exported, but the structs are not**
+
 **This Wrapper is currently incomplete and should be treated as such.**
+
+**The docs are currently organized by Functions/structs, this does not allow for the clearest doc reading and will be changed**
 
 ## Getting Started
 

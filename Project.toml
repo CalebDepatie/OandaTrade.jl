@@ -1,7 +1,7 @@
 name = "Julianda"
 uuid = "07dd2640-189c-11ea-0deb-23df4a1bee01"
 authors = ["Caleb Depatie <calebd7@hotmail.com>"]
-version = "0.9.2"
+version = "0.9.3"
 
 [deps]
 CodecZlib = "944b1d66-785c-5afd-91f1-9de20f533193"

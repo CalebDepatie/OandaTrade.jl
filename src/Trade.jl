@@ -2,6 +2,8 @@ module Trade
 
 using JSON3, HTTP, Dates
 
+export getTrades, getOpenTrades, getTrade, closeTrade, clientExtensions, setTradeOrders, cancelTradeOrders
+
 "Detailed Trade struct from Oanda"
 mutable struct trade
     averageClosePrice # The average closing price of the Trad

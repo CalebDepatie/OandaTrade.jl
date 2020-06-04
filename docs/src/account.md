@@ -5,7 +5,6 @@ CurrentModule = Julianda.Account
 ```
 
 ## Functions
-
 ```@docs
 Account.listAccounts
 Account.getAccount
@@ -15,7 +14,6 @@ Account.setAccountConfig
 ```
 
 ## Structs
-
 ```@docs
 Account.account
 Account.instrumentDetail

@@ -1,6 +1,9 @@
 module Instrument
 
 using HTTP, JSON3, Dates, CodecZlib
+
+export getCandles, getOrderBook, getPositionBook
+
 #------------------------------------------------------------------------------------
 #/instruments/{instrument}/candles Endpoint
 #------------------------------------------------------------------------------------

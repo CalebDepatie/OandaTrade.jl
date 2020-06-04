@@ -1,5 +1,6 @@
 module Config
-export loadConfig, config
+
+export loadConfig, saveConfig, changeAccount
 
 import YAML
 

@@ -2,6 +2,8 @@ module Pricing
 
 using HTTP, JSON3, Dates
 
+export getPrice, checkMarket, streamPrice, getLatestCandles
+
 # ------------------------------------------------------------------------------------
 # /accounts/{accountID}/pricing Endpoint
 # ------------------------------------------------------------------------------------

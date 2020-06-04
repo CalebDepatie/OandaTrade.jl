@@ -2,12 +2,14 @@ module Account
 
 import HTTP, JSON3, Dates
 
-# If I can get around the include statements I would like to
+export listAccounts, getAccount, getAccountSummary, getAccountInstruments, setAccountConfig
+
+# TODO: Remove this?
 include("Position.jl")
 include("Trade.jl")
 include("Order.jl")
 
-# TODO: Add strict types / Add type of coersion
+# TODO: Add strict types
 
 """
 The account struct given by Oanda
