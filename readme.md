@@ -1,6 +1,7 @@
 # Julianda
 
-[![Build Status][travis-ci-badge]][travis-ci]
+[![Build Status (Travis)][travis-ci-badge]][travis-ci]
+[![Build Status (Github)][git-ci-badge]][git-ci]
 [![Code Cov][code-cov-badge]][code-cov]
 [![TODOs][todos-badge]][todos]
 [![License][license-badge]][license]
@@ -36,6 +37,9 @@ println(bar)
 
 [travis-ci]: https://travis-ci.org/CalebDepatie/Julianda
 [travis-ci-badge]: https://travis-ci.org/CalebDepatie/Julianda.svg?branch=master
+
+[git-ci]: https://github.com/CalebDepatie/Julianda/actions?query=workflow%3Aci
+[git-ci-badge]: https://github.com/CalebDepatie/Julianda/workflows/ci/badge.svg
 
 [code-cov]: https://codecov.io/gh/CalebDepatie/Julianda
 [code-cov-badge]: https://codecov.io/gh/CalebDepatie/Julianda/branch/master/graph/badge.svg
