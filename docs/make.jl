@@ -16,6 +16,6 @@ makedocs(
 
 deploydocs(
     repo = "github.com/CalebDepatie/Julianda.git",
-    devbranch = "dev"
+    devbranch = "dev",
     versions = ["stable" => "v^", "v#.#", "dev"]
     )
