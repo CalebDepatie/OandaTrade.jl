@@ -1,7 +1,8 @@
 # Julianda
 
 [![Build Status][travis-ci-badge]][travis-ci]
-[![codecov][code-cov-badge]][code-cov]
+[![Code Cov][code-cov-badge]][code-cov]
+[![TODOs][todos-badge]][todos]
 
 Julianda is a API wrapper for the Oanda REST 2.0 API. The current version is fairly barebones, but it's planned for it to have additional features that can be optionally enabled by using other libraries.
 
@@ -20,3 +21,6 @@ Julianda is a API wrapper for the Oanda REST 2.0 API. The current version is fai
 
 [docs-dev]: https://calebdepatie.github.io/Julianda/dev
 [docs-dev-badge]: https://img.shields.io/badge/docs-dev-blue.svg
+
+[todos]: https://www.tickgit.com/browse?repo=github.com/CalebDepatie/Julianda
+[todos-badge]: https://badgen.net/https/api.tickgit.com/badgen/github.com/CalebDepatie/Julianda
