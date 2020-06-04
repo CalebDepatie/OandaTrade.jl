@@ -11,11 +11,11 @@ makedocs(
     format = Documenter.HTML(),
     pages = ["Introduction" => "index.md",
             "Endpoints" => ["config.md", "account.md", "instrument.md",
-                            "position.md", "transaction.md"]]
+                            "order.md", "position.md", "pricing.md",
+                            "trade.md", "transaction.md"]]
 )
 
 deploydocs(
     repo = "github.com/CalebDepatie/Julianda.git",
-    devbranch = "dev",
     versions = ["stable" => "v^", "v#.#", "dev"]
     )

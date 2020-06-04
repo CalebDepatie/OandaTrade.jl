@@ -13,6 +13,7 @@ YAML = "ddb6d928-2868-570f-bddf-ab3f9cf99eb6"
 
 [compat]
 CodecZlib = "0.6.0"
+Documenter = "0.24"
 HTTP = "0.8.8"
 JSON3 = "0.1.13"
 YAML = "0.3.2"

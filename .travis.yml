@@ -5,6 +5,7 @@ julia:
 os:
 - windows
 - linux
+- osx
 before_install:
 - openssl aes-256-cbc -K $encrypted_07b4fc4562a4_key -iv $encrypted_07b4fc4562a4_iv
   -in config.enc -out config -d
