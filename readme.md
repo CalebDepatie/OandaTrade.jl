@@ -35,8 +35,8 @@ bar = OandaTrade.Account.getAccount(foo)
 println(bar)
 ```
 
-[travis-ci]: https://travis-ci.org/CalebDepatie/OandaTrade.jl
-[travis-ci-badge]: https://travis-ci.org/CalebDepatie/OandaTrade.jl.svg?branch=master
+[travis-ci]: https://travis-ci.org/CalebDepatie/Julianda
+[travis-ci-badge]: https://travis-ci.org/CalebDepatie/Julianda.svg?branch=master
 
 [git-ci]: https://github.com/CalebDepatie/OandaTrade.jl/actions?query=workflow%3Aci
 [git-ci-badge]: https://github.com/CalebDepatie/OandaTrade.jl/workflows/ci/badge.svg
