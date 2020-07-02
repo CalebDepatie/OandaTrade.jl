@@ -1,7 +1,7 @@
 # Config
 
 ```@meta
-CurrentModule = Julianda.Config
+CurrentModule = OandaTrade.Config
 ```
 
 Config files are YAML files with the information required to make Oanda API Calls

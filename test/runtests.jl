@@ -1,4 +1,4 @@
-using Test, Julianda
+using Test, OandaTrade
 
 @test true
 

@@ -3,11 +3,11 @@ push!(LOAD_PATH,"../src/")
 import Pkg
 Pkg.add("Documenter")
 
-using Documenter, Julianda
+using Documenter, OandaTrade
 
 makedocs(
-    modules = [Julianda],
-    sitename = "Julianda",
+    modules = [OandaTrade],
+    sitename = "OandaTrade.jl",
     format = Documenter.HTML(),
     pages = ["Introduction" => "index.md",
             "Endpoints" => ["config.md", "account.md", "instrument.md",
@@ -16,6 +16,6 @@ makedocs(
 )
 
 deploydocs(
-    repo = "github.com/CalebDepatie/Julianda.git",
+    repo = "github.com/CalebDepatie/OandaTrade.jl.git",
     versions = ["stable" => "v^", "v#.#", "dev"]
     )

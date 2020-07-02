@@ -1,7 +1,7 @@
 # Pricing
 
 ```@meta
-CurrentModule = Julianda.Pricing
+CurrentModule = OandaTrade.Pricing
 ```
 
 ## Functions

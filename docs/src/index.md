@@ -1,7 +1,7 @@
 
 # Introduction
 
-Julianda is an API wrapper for Oanda's REST-v20 API. This wrapper allows you to access the full functionality of Oanda's API, including configuring your account, creating orders, and checking prices.
+OandaTrade.jl is an API wrapper for Oanda's REST-v20 API. This wrapper allows you to access the full functionality of Oanda's API, including configuring your account, creating orders, and checking prices.
 
 **Note: All functions are exported, but the structs are not**
 
@@ -11,9 +11,9 @@ Julianda is an API wrapper for Oanda's REST-v20 API. This wrapper allows you to 
 
 ## Getting Started
 
-Getting started with Julianda is simple! Install it using:
+Getting started with OandaTrade.jl is simple! Install it using:
 ```Julia
-$ Pkg.add("https://github.com/CalebDepatie/Julianda.git")
+$ Pkg.add("https://github.com/CalebDepatie/OandaTrade.jl.git")
 ```
 You will need to create a config file with your Oanda account information in the following YAML format:
 ```YAML
@@ -25,9 +25,9 @@ account: <<Account to initially interact with>>
 ```
 If the config file was setup correctly the following code should work:
 ```Julia
-using Julianda
-foo = Julianda.Config.loadConfig("config")
-bar = Julianda.Account.getAccount(foo)
+using OandaTrade
+foo = OandaTrade.Config.loadConfig("config")
+bar = OandaTrade.Account.getAccount(foo)
 println(bar)
 ```
-This will gave you a basic readout of your active account's information! Congratulations on your first Julianda API call!
+This will gave you a basic readout of your active account's information! Congratulations on your first OandaTrade.jl API call!

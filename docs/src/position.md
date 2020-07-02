@@ -1,7 +1,7 @@
 # Positions
 
 ```@meta
-CurrentModule = Julianda.Position
+CurrentModule = OandaTrade.Position
 ```
 
 ## Functions

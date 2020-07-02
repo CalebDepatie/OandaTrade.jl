@@ -1,4 +1,4 @@
-module Julianda
+module OandaTrade
 
 include("Order.jl")
 include("Position.jl")

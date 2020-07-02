@@ -1,7 +1,7 @@
 # Transactions
 
 ```@meta
-CurrentModule = Julianda.Transaction
+CurrentModule = OandaTrade.Transaction
 ```
 
 ## Functions

@@ -1,7 +1,7 @@
 # Instruments
 
 ```@meta
-CurrentModule = Julianda.Instrument
+CurrentModule = OandaTrade.Instrument
 ```
 
 ## Functions
