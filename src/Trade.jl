@@ -80,7 +80,7 @@ JSON3.StructType(::Type{trade}) = JSON3.Mutable()
 Return an array of trade struct
 
 # Arguments
-- 'config::config': a valid struct with user configuracion data
+- 'config::config': a valid struct with user configuration data
 - 'state::String": the state to filter the requested Trades by (OPEN, CLOSED, CLOSE_WHEN_TRADEABLE, ALL)
 - 'count::Int': max number of trades to return
 

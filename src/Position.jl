@@ -3,7 +3,15 @@ using JSON3, HTTP
 
 export listPositions, listOpenPositions, getPosition, closePosition, closePositionFull
 
-"Individual data for positions (A Long or Short)"
+"""
+Individual data for positions (A Long or Short)
+
+# Fields
+- 'pl': Profit / Loss
+- 'resettablePL': Profit / Loss since last reset
+- 'units': Number of units in the trade
+- 'unrealizedPL': Unrealized profit / loss in the posistion
+"""
 mutable struct posData
     pl # The profit / Loss
     resettablePL # Profit / Loss since last reset
@@ -13,7 +21,17 @@ mutable struct posData
     posData() = new()
 end
 
-"Detailed Position struct from Oanda"
+"""
+Detailed Position struct from Oanda
+
+# Fields
+- 'instrument': The instrument of the position
+- 'long::posData': Data for longs on the position
+- 'short::posData': Data for shorts on the position
+- 'pl': Overall profit / loss for the position
+- 'resettablePL': Profit / Loss since last reset
+- 'unrealizedPL': Unrealized profit / loss in the posistion
+"""
 mutable struct position
     instrument # The instrument
     # I have both of the following to enable people with hedging enabled
@@ -69,6 +87,11 @@ JSON3.StructType(::Type{posData}) = JSON3.Mutable()
     listPositions(config)
 
 Returns a list of current positions
+
+Returns an object of type 'Vector{position}'
+
+# Arguments
+- 'config::config': A valid config object
 """
 function listPositions(config)
     r = HTTP.request(
@@ -101,6 +124,11 @@ end
     listOpenPositions(config)
 
 Returns a list of current positions that have an open trade
+
+Returns an object of 'Vector{position}'
+
+# Arguments
+- 'config::config': A valid config object
 """
 function listOpenPositions(config)
     r = HTTP.request(
@@ -133,6 +161,12 @@ end
     getPosition(config, instrument)
 
 Returns position data for a specified instrument
+
+Returns an object of type 'position'
+
+# Arguments
+- 'config::config': A valid config object
+- 'instrument': The instrument to get info from
 """
 function getPosition(config, instrument)
     r = HTTP.request(
@@ -161,8 +195,15 @@ end
     closePositionFull(config, instrument, long=true)
 
 Closes a position completely
+
+Returns true on success
+
+# Arguments
+- 'config::config': A valid config object
+- 'instrument': instrument to close
+- 'long::Bool': True to close long false to close short
 """
-function closePositionFull(config, instrument, long=true)
+function closePositionFull(config, instrument, long::Bool=true)
     data = ""
     if long
         data = "{\"longUnits\": \"ALL\"}"
@@ -195,6 +236,14 @@ end
     closePosition(config, instrument, LongUnits=NONE, ShortUnits=NONE)
 
 Closes a positions units based on input
+
+Returns true on success
+
+# Arguments
+- 'config::config': A valid config object
+- 'instrument': The instrument to act on
+- 'longUnits': The number of long units to close
+- 'shortUnits': The number of short units to close
 """
 function closePosition(config, instrument, longUnits="NONE", shortUnits="NONE")
     r = HTTP.request(

@@ -7,6 +7,18 @@ export getTransactionPages, getTransaction, getTransactions
 #------------------------------------------------------------------------------------
 #/accounts/{accountID}/transactions Endpoint
 #------------------------------------------------------------------------------------
+"""
+The transaction pages
+
+# Fields
+- 'from': where pages start
+- 'to': where pages end
+- 'pageSize': size of each page
+- 'type::Vector{String}': The type of the transaction pages
+- 'count': number of pages
+- 'pages::Vector{String}': The pages
+- 'lastTransactionID': the last transaction id
+"""
 mutable struct transactionPages
     from
     to
@@ -38,6 +50,13 @@ end
     getTransactionPages(config::config; from::DateTime=nothing, to::DateTime=Dates.now(), pageSize::Int=100, type::String=nothing)
 
 Return a struct. Field ':pages' includes the urls for requesting the transactions data in the given timeframe
+
+# Arguments
+- 'config::config': a valid config file
+- 'from::Union{DateTime, Nothing}': get transactions from
+- 'to::DateTime': get transactions to
+- 'pageSize::Int': Size of each page
+- 'type::Union{String,Nothing}': type of pages to request
 
 # Example
     getTransactionPages(userdata, from=DateTime(2019,5,31),type="MARKET_ORDER,STOP_LOSS_ORDER")
@@ -80,6 +99,13 @@ end
 #------------------------------------------------------------------------------------
 #/accounts/{accountID}/transactions/{transactionID} Endpoint
 #------------------------------------------------------------------------------------
+"""
+Transactions
+
+# Fields
+- 'transaction::Dict{String,Any}': The transaction data
+- 'lastTransactionID': The last transaction
+"""
 mutable struct transaction
     transaction::Dict{String,Any}
     lastTransactionID
@@ -144,6 +170,10 @@ end
 
 Return a Dictionary with the transaction data
 
+# Arguments
+- 'config::config': a valid config object
+- 'tID::Int': transaction ID
+
 # Example
     getTransaction(userdata,4)
 """
@@ -188,6 +218,16 @@ JSON3.StructType(::Type{transactions}) = JSON3.Mutable()
     getTransactions(config::config, sinceID::Int, type::Union{String,Nothing}=nothing)
 
 Return an array of Dictionaries with the transactions data
+
+# Arguments
+- 'config::config': a valid config struct
+- 'type::Union{String,Nothing}': Specify transaction types
+
+- 'fromID::Int', 'toID::Int': Get all transactions between two ID's
+
+OR
+
+- 'sinceID::Int': Get all transactions since an ID 
 
 # Examples
     getTransactions(userdata,3,"MARKET_ORDER,STOP_LOSS_ORDER")

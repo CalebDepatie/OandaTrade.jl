@@ -7,6 +7,15 @@ export getCandles, getOrderBook, getPositionBook
 #------------------------------------------------------------------------------------
 #/instruments/{instrument}/candles Endpoint
 #------------------------------------------------------------------------------------
+"""
+Candlestick tick data
+
+# Fields
+- 'o': Opening price
+- 'h': Highest price
+- 'l': Lowest price
+- 'c': Closing price
+"""
 mutable struct candlestickdata
     o   #open
     h   #high
@@ -16,6 +25,17 @@ mutable struct candlestickdata
     candlestickdata() = new()
 end
 
+"""
+Candlesticks
+
+# Fields
+- 'time': The time the data corresponds to
+- 'bid::candlestickdata': Candlestick tick data for bids
+- 'ask::candlestickdata': Candlestick tick data for asks
+- 'mid::candlestickdata': Candlestick tick data for the mid
+- 'volume': Volume of trades
+- 'complete': is this complete data?
+"""
 mutable struct candlestick
     time
     bid::candlestickdata
@@ -27,6 +47,14 @@ mutable struct candlestick
     candlestick() = new()
 end
 
+"""
+Candles
+
+# Fields
+- 'instrument': Instrument the data relates to
+- 'granularity': The granularity of the candle data
+- 'candles::Vector{candlestick}': The candlestick data
+"""
 mutable struct candles
     instrument
     granularity
@@ -72,6 +100,8 @@ end
 
 Get candle information of a given instrument and returns a Candle struct
 Information includes: time, granularity, open, high, low, close, volume and a complete indicator
+
+Returns an object of type 'candles'
 
 getCandles has five ways to select the candles to retrieve
 - lastn: last "n" candles
@@ -318,6 +348,14 @@ end
 #------------------------------------------------------------------------------------
 #/instruments/{instrument}/orderBook Endpoint
 #------------------------------------------------------------------------------------
+"""
+The order book bucket
+
+# Fields
+- 'price': The price
+- 'longCountPercent': Percent that are longs
+- 'shortCountPercent': Percent that are shorts
+"""
 mutable struct orderBookBucket
     price
     longCountPercent
@@ -326,6 +364,16 @@ mutable struct orderBookBucket
     orderBookBucket() = new()
 end
 
+"""
+Order book
+
+# Fields
+- 'instrument': The instrument of the book
+- 'time': The time this data corresponds to
+- 'price': The price
+- 'bucketWidth': How many buckets there are
+- 'buckets::Vector{orderBookBucket}': The buckets
+"""
 mutable struct orderBook
     instrument
     time
@@ -372,6 +420,15 @@ end
 """
     getOrderBook(config::config,instrument::String,time::DateTime=now())
 
+Get the order book data
+
+Returns an object of type 'OrderBook'
+
+# Arguments
+- 'config::config': A valid config object
+- 'instrument::String': The instrument key
+- 'time::DateTime': The time to request the order book for
+
 # Example
     getOrderBook(userdata,"EUR_CHF",DateTime(2017,1,31,4,00))
 
@@ -409,6 +466,14 @@ end
 #------------------------------------------------------------------------------------
 #/instruments/{instrument}/positionBook Endpoint
 #------------------------------------------------------------------------------------
+"""
+The bucket for the position book
+
+# Fields
+- 'price': The price
+- 'longCountPercent': The percent of orders that are long
+- 'shortCountPercent': The percent of orders that are short
+"""
 mutable struct positionBookBucket
     price
     longCountPercent
@@ -417,6 +482,16 @@ mutable struct positionBookBucket
     positionBookBucket() = new()
 end
 
+"""
+The position book
+
+# Fields
+- 'instrument': The instrument of the book
+- 'time': The time this data corresponds to
+- 'price': The price
+- 'bucketWidth': How many buckets there are
+- 'buckets::Vector{positionBookBucket}': The buckets
+"""
 mutable struct positionBook
     instrument
     time
@@ -462,6 +537,15 @@ end
 
 """
     getPositionBook(config::config,instrument::String,time::DateTime=now())
+
+Get the position book data
+
+Returns an object of type 'positionBook'
+
+# Arguments
+- 'config::config': A valid config object
+- 'instrument::String': The instrument key
+- 'time::DateTime': The time to request the order book for
 
 # Example
     getPositionBook(userdata,"EUR_CHF",DateTime(2017,1,31,4,00))

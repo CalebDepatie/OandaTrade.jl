@@ -6,7 +6,14 @@ export extensions, clientExtensions, takeProfit, stopLoss, trailingStopLoss,
     relatedOrder, getOrders, getPendingOrders, getOrder, replaceOrder, cancelOrder,
     orderClientExtensions
 
-# clientExtension request structs
+"""
+clientExtension request structs
+
+# Fields
+- 'id::String': id of the extension
+- 'tag::String': tag of the extension
+- 'comment::String': comment of the extension
+"""
 struct extensions
     id::String
     tag::String
@@ -27,7 +34,14 @@ JSON3.StructType(::Type{extensions}) = JSON3.Struct()
 # /accounts/{accountID}/orders POST Endpoint
 # ------------------------------------------------------------------------------------
 
-# orders endpoint request structs
+"""
+Take profit order struct
+
+# Fields
+- 'price::Real': The price to execute at
+- 'timeInForce::String': The type of time in force
+- 'gtdTime::String': The gtd
+"""
 mutable struct takeProfit
     price::Real
     timeInForce::String
@@ -37,6 +51,15 @@ mutable struct takeProfit
     takeProfit() = new()
 end
 
+"""
+Stop loss order struct
+
+# Fields
+- 'price::Real': The price to execute at
+- 'distance::Real': The price distance
+- 'timeInForce::String': The type of time in force
+- 'gtdTime::String': The gtd
+"""
 mutable struct stopLoss
     price::Real
     distance::Real
@@ -47,6 +70,14 @@ mutable struct stopLoss
     stopLoss() = new()
 end
 
+"""
+Trailing stop loss order struct
+
+# Fields
+- 'distance::Real': The price distance
+- 'timeInForce::String': The type of time in force
+- 'gtdTime::String': The gtd
+"""
 mutable struct trailingStopLoss
     distance::Real
     timeInForce::String
@@ -56,7 +87,27 @@ mutable struct trailingStopLoss
     trailingStopLoss() = new()
 end
 
-"Detailed OrderRequest struct from Oanda"
+"""
+Detailed OrderRequest struct from Oanda
+
+# Fields
+- 'clientExtensions::clientExtensions': Client extensions for the order
+- 'distance': for orders on fill
+- 'gtdTime'
+- 'instrument': instrument of the order
+- 'positionFill': Type of position fill on the order
+- 'price': Price the order is placed at
+- 'priceBound'
+- 'stopLossOnFill::stopLoss': Stop loss settings for an order
+- 'takeProfitOnFill::takeProfit' Take profit settings for an order
+- 'timeInForce': Type of time in force
+- 'tradeClientExtensions::clientExtensions': Client extensions for the trade
+- 'tradeID::String'
+- 'trailingStopLossOnFill::trailingStopLoss' Trailing stop loss settings for an order
+- 'triggerCondition': Trigger condition of the order
+- 'type': Type of order
+- 'units': Number of units (negative for a short, positive for a long)
+"""
 mutable struct orderRequest
     clientExtensions::clientExtensions
     distance # for orders on fill
@@ -106,6 +157,8 @@ JSON3.StructType(::Type{order2send}) = JSON3.Struct()
     marketOrder(config, instrument, units;[TIF, positionFill, priceBound, TP ,SL ,tSL, clientExt ,tradeExt])
 
 Places a market order
+
+Returns a dictionary
 
 #Arguments
 - 'config::config': a valid struct with user configuration data
@@ -181,9 +234,26 @@ end
 
 # Other type of orders -----------------------------------------------------------------------
 """
- nonMarketOrder(config, type, instrument, units, price;[TIF, gtdTime, positionFill, trigge, priceBound, TP ,SL ,tSL, clientExt ,tradeExt])
+ nonMarketOrder(config::config, type::String, instrument, units, price;[TIF, gtdTime, positionFill, trigge, priceBound, TP ,SL ,tSL, clientExt ,tradeExt])
 
  generic order function for limit, stop and marketIfTouchedOrders
+
+# Arguments
+- 'config::config': A valid config object
+- 'type::String': The type of order
+- 'instrument::String': The instrument to act on
+- 'units::Real': The number of units to purchase
+- 'price::Real': The price to order at
+
+# Keyword Arguments
+- 'TIF::String': timeinForce value ("GTC","GTD","GFD","FOK","IOC")
+- 'gtdTime::Union{Nothing,String}': The gtd
+- 'positionFill::String': how positions are modified when the order is filled ("OPEN_ONLY", "REDUCE_FIRST", "REDUCE_ONLY","DEFAULT"). Defaults to "DEFAULT"
+- 'trigger::String': Trigger type
+- 'priceBound::Union{Nothing,String}': worst price for filling
+- 'TP', 'SL', 'tSL': a NamedTuple with order-on-fill details. Valid values are 'price::Real', 'distance::Real', 'timeInForce::String' and 'gtdTime::String'
+- 'clientExt'(not implemented)
+- 'tradeExt' (not implemented)
 """
 
 function nonMarketOrder(config, type::String, instrument::String, units::Real, price::Real;

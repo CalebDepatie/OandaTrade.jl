@@ -4,7 +4,18 @@ export loadConfig, saveConfig, changeAccount
 
 import YAML
 
-"Config struct required for connecting to Oanda"
+"""
+Config struct required for connecting to Oanda
+
+# Fields
+- 'hostname::String': The hostname to direct the api to (practice or live)
+- 'streamingHostname::String': Streaming version of the hostname
+- 'token::String': The unique user token
+- 'username::String': Account username
+- 'account::String': Account presently being actively used
+- 'datetime::String': Accepted datetime format (should not be actively changed)
+
+"""
 struct config
     hostname::String # Either practice host or live
     streamingHostname::String # Practice or live streaming host
@@ -19,8 +30,10 @@ end
 
 Loads a YAML config
 
+Returns object of type 'config'
+
 # Arguments
-- path: The relative path to the config file
+- 'path::String': The relative path to the config file
 """
 function loadConfig(path::String)
     data = YAML.load(open(path))
@@ -40,9 +53,11 @@ end
 
 Saves a config as a YAML file
 
+Returns true on success
+
 # Arguments
-- path: Path to save the config at
-- config: The config struct to save
+- 'path::String': Path to save the config at
+- 'config::config': The config struct to save
 """
 function saveConfig(path::String, config::config)
     #Convert config file to string for saving
@@ -67,15 +82,17 @@ function saveConfig(path::String, config::config)
 end
 
 """
-    changeAccount(config::config, acc::string)
+    changeAccount(config::config, account::string)
 
-Returns the config with the new account number
+Change the active account
+
+Returns object of type 'config'
 
 # Arguments
-- conf: The config file to update
-- acc: The string of the account identifier
+- 'config::config': The config file to update
+- 'account::String': The string of the account identifier
 """
-function changeAccount(conf::config, acc::String)
+function changeAccount(config::config, account::String)
     temp = config(
         conf.hostname,
         conf.streamingHostname,

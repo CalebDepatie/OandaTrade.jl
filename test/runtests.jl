@@ -1,8 +1,10 @@
 using Test, OandaTrade
 
+# Presently only tests that it builds.
+
 @test true
 
-"""
+```
 @testset "account" begin
     include("account_test.jl")
 end
@@ -26,4 +28,4 @@ end
 @testset "pricing" begin
     include("pricing_test.jl")
 end
-"""
+```

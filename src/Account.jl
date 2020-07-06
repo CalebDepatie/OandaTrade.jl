@@ -15,34 +15,34 @@ include("Order.jl")
 The account struct given by Oanda
 
 # Fields
-- NAV: The Net Asset Value of an account
-- alias: User defined alias if one exists
-- balance: Current Account Balance
-- createdByUserID: The User ID of the account creator
-- createdTime: The time the account was created
-- currency: The primary currency of the account
-- hedgingEnabled: If the account is allowed to hedge
-- id: The account ID
-- lastTransactionID: The last transaction ID
-- marginAvailable: The margin still available on the account
-- marginCloseoutMarginUsed: The closeout margin used
-- marginCloseoutNAV: Margins closeout NAV
-- marginCloseoutPercent: Margin closeout percent
-- marginCloseoutPositionValue: Margin closeout position value
-- marginCloseoutUnrealizedPL: Margin closeout unrealised profit/loss
-- marginRate: The margin rate
-- marginUsed: Amount of margin used
-- openPositionCount: Number of open positions
-- openTradeCount: Number of open trades
-- orders: Orders of the account
-- pendingOrderCount: Number of pending orders
-- pl: The profit or loss over the lifetime of the account
-- positionValue: Value of an accounts open positions
-- positions: Positions of the account
-- resettablePL: The resetable profit/loss since last reset
-- trades: Trades of the account
-- unrealizedPL: The unrealised profit/loss of the account
-- withdrawalLimit: The withdrawal limit of the account
+- 'NAV': The Net Asset Value of an account
+- 'alias': User defined alias if one exists
+- 'balance': Current Account Balance
+- 'createdByUserID': The User ID of the account creator
+- 'createdTime': The time the account was created
+- 'currency': The primary currency of the account
+- 'hedgingEnabled': If the account is allowed to hedge
+- 'id': The account ID
+- 'lastTransactionID': The last transaction ID
+- 'marginAvailable': The margin still available on the account
+- 'marginCloseoutMarginUsed': The closeout margin used
+- 'marginCloseoutNAV': Margins closeout NAV
+- 'marginCloseoutPercent': Margin closeout percent
+- 'marginCloseoutPositionValue': Margin closeout position value
+- 'marginCloseoutUnrealizedPL': Margin closeout unrealised profit/loss
+- 'marginRate': The margin rate
+- 'marginUsed': Amount of margin used
+- 'openPositionCount': Number of open positions
+- 'openTradeCount': Number of open trades
+- 'orders': Orders of the account
+- 'pendingOrderCount': Number of pending orders
+- 'pl': The profit or loss over the lifetime of the account
+- 'positionValue': Value of an accounts open positions
+- 'positions': Positions of the account
+- 'resettablePL': The resetable profit/loss since last reset
+- 'trades': Trades of the account
+- 'unrealizedPL': The unrealised profit/loss of the account
+- 'withdrawalLimit': The withdrawal limit of the account
 """
 mutable struct account
     NAV # The Net Asset Value of an account
@@ -103,17 +103,17 @@ end
 Tradeable Instrument data
 
 # Fields
-- displayName: Instrument name
-- displayPrecision: Decimal precision of the instrument
-- marginRate: Margin rate on the instrument
-- maximumOrderUnits: Max units that can be ordered
-- maximumPositionSize: max position size of the instrument
-- maximumTrailingStopDistance: max trailing stop distance
-- minimumTrailingStopDistance: min trailing stop distance
-- name: Request usable instrument name
-- pipLocation: current pip location
-- tradeUnitsPrecision: Decimal precision of trade units
-- type: Type of instrument
+- 'displayName': Instrument name
+- 'displayPrecision': Decimal precision of the instrument
+- 'marginRate': Margin rate on the instrument
+- 'maximumOrderUnits': Max units that can be ordered
+- 'maximumPositionSize': max position size of the instrument
+- 'maximumTrailingStopDistance': max trailing stop distance
+- 'minimumTrailingStopDistance': min trailing stop distance
+- 'name': Request usable instrument name
+- 'pipLocation': current pip location
+- 'tradeUnitsPrecision': Decimal precision of trade units
+- 'type': Type of instrument
 """
 mutable struct instrumentDetail
     displayName # Instrument name
@@ -233,6 +233,12 @@ end
     listAccounts(config::config)
 
 Returns a list of all account IDs and tags authorized for the given Token
+
+Returns object of type 'Vector{accountListed}'
+
+# Arguments
+- 'config::config': a valid config object
+
 """
 function listAccounts(config)
     r = HTTP.request(
@@ -254,6 +260,12 @@ end
     getAccount(config::config)
 
 Returns an Oanda account struct when given a valid config
+
+Returns object of type 'account'
+
+# Arguments
+- 'config::config': a valid config object
+
 """
 function getAccount(config)
     r = HTTP.request(
@@ -281,6 +293,12 @@ end
 
 Similar to getAccount but doesnt return the order & trade & positions lists, however
 it still returns a full account struct, just with these fields left undefined
+
+Returns object of type 'account'
+
+# Arguments
+- 'config::config': a valid config object
+
 """
 function getAccountSummary(config)
     r = HTTP.request(
@@ -314,10 +332,14 @@ end
 
 Returns a list of tradeable instruments details for the account
 
+Returns object of type 'Vector{instrumentDetail}'
+
 # Arguments
-- inst: Can be left blank to return all tradeable instruments, or as a string csv of instruments to return their details
+- 'config::config': a valid config object
+- 'inst::String': Can be left blank to return all tradeable instruments, or as a string csv of instruments to return their details
+
 """
-function getAccountInstruments(config, inst = nothing)
+function getAccountInstruments(config, inst::String = "")
     request = string(
         "https://",
         config.hostname,
@@ -325,7 +347,7 @@ function getAccountInstruments(config, inst = nothing)
         config.account,
         "/instruments",
     )
-    if !isnothing(inst)
+    if inst != ""
         request = string(request, "?instruments=", inst)
     end
     r = HTTP.request(
@@ -353,9 +375,13 @@ end
 
 Set client configurable configuration settings
 
+Returns true on success
+
 # Arguments
-- alias: The account alias
-- marginRate: The desired decimal margin rate formatted as a string
+= 'config::config': a valid config object
+- 'alias::String': The account alias
+- 'marginRate::String': The desired decimal margin rate formatted as a string
+
 """
 function setAccountConfig(config, alias::String, marginRate::String)
     data = accountConfig(alias, marginRate)

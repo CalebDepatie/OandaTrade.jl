@@ -8,7 +8,13 @@ export getPrice, checkMarket, streamPrice, getLatestCandles
 # /accounts/{accountID}/pricing Endpoint
 # ------------------------------------------------------------------------------------
 
-"Ask / Bid pricing data"
+"""
+Ask / Bid pricing data
+
+# Arguments
+- 'price': Price of the ask / bid
+- 'liquidity': Liquidity of the ask / bid
+"""
 mutable struct priceBucket
     price # Price of the ask / bid
     liquidity # liquidity of the ask / bid
@@ -16,7 +22,19 @@ mutable struct priceBucket
     priceBucket() = new()
 end
 
-"Pricing data of an instrument"
+"""
+Pricing data of an instrument
+
+# Arguments
+- 'type': Type
+- 'instrument': Instrument of the price
+- 'time': Time of the price update
+- 'bids::Vector{priceBucket}': bid info
+- 'asks::Vector{priceBucket}': ask info
+- 'closeoutBid': Closeout bid price
+- 'closeoutAsk': Closeout ask price
+- 'tradeable': Can you trade this instrument
+"""
 mutable struct price
     type # Type
     instrument
@@ -66,6 +84,8 @@ end
 
 Get the most recent price update of an instrument
 
+Returns an object of type 'priceData'
+
 # Arguments
     - 'config::config': a valid struct with user configuracion data
     - 'instruments::Vector{String}': a vector of valid pairs (e.g. ["EUR_USD","EUR_JPY"])
@@ -89,6 +109,8 @@ function getPrice(config, instruments::Vector{String})
     return data.prices #Does not return 'since' datetime=#
 end
 
+
+#TODO: move this to a utils file
 
 "Exception thrown when the market is closed on the weekend"
 struct ClosedMarketException <: Exception end
@@ -140,6 +162,15 @@ end
 # ------------------------------------------------------------------------------------
 
 # All structs defined here except latestCandles are common with those in Instrument.jl
+"""
+Candlestick tick data
+
+# Fields
+- 'o': Opening price
+- 'h': Highest price
+- 'l': Lowest price
+- 'c': Closing price
+"""
 mutable struct candlestickdata
     o   #open
     h   #high
@@ -149,6 +180,17 @@ mutable struct candlestickdata
     candlestickdata() = new()
 end
 
+"""
+Candlesticks
+
+# Fields
+- 'time': The time the data corresponds to
+- 'bid::candlestickdata': Candlestick tick data for bids
+- 'ask::candlestickdata': Candlestick tick data for asks
+- 'mid::candlestickdata': Candlestick tick data for the mid
+- 'volume': Volume of trades
+- 'complete': is this complete data?
+"""
 mutable struct candlestick
     complete::Bool
     volume
@@ -160,6 +202,14 @@ mutable struct candlestick
     candlestick() = new()
 end
 
+"""
+Candles
+
+# Fields
+- 'instrument': Instrument the data relates to
+- 'granularity': The granularity of the candle data
+- 'candles::Vector{candlestick}': The candlestick data
+"""
 mutable struct candles
     instrument::String
     granularity::String
